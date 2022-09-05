@@ -21,16 +21,16 @@ class InvoiceServiceIntegrationTest extends Specification {
 
     def "should save invoices returning sequential id, invoice should have id set to correct value, get by id returns saved invoice"() {
         when:
-        def ids = invoices.collect({ service.saveInvoice(it) })
+        def ids = invoices.collect({ service.save(it) })
 
         then:
-        ids.forEach({ assert service.findForId(it) != null })
-        ids.forEach({ assert service.findForId(it).getId() == it })
+        ids.forEach({ assert service.getById(it) != null })
+        ids.forEach({ assert service.getById(it).getId() == it })
     }
 
     def "should get by id returns null when there is no invoice with given id"() {
         expect:
-        service.findForId(1) == null
+        service.getById(1) == null
     }
 
     def "should get all returns empty collection if there were no invoices"() {
@@ -40,13 +40,13 @@ class InvoiceServiceIntegrationTest extends Specification {
 
     def "should get all returns all invoices in the database, deleted invoice is not returned"() {
         given:
-        invoices.forEach({ service.saveInvoice(it) })
+        invoices.forEach({ service.save(it) })
 
         expect:
         service.getAll().size() == invoices.size()
 
         when:
-        service.deleteInvoice(1)
+        service.delete(1)
 
         then:
         service.getAll().size() == invoices.size() - 1
@@ -54,10 +54,10 @@ class InvoiceServiceIntegrationTest extends Specification {
 
     def "should can delete all invoices"() {
         given:
-        invoices.forEach({ service.saveInvoice(it) })
+        invoices.forEach({ service.save(it) })
 
         when:
-        invoices.forEach({ service.deleteInvoice(it.getId()) })
+        invoices.forEach({ service.delete(it.getId()) })
 
         then:
         service.getAll().isEmpty()
@@ -65,21 +65,21 @@ class InvoiceServiceIntegrationTest extends Specification {
 
     def "should deleting not existing invoice is not causing any error"() {
         expect:
-        service.deleteInvoice(123)
+        service.delete(123)
     }
 
     def "should be possible to update the invoice"() {
         given:
-        long id = service.saveInvoice(invoices.get(0))
+        long id = service.save(invoices.get(0))
         when:
-        service.updateInvoice(id, invoices.get(1))
+        service.update(id, invoices.get(1))
         then:
-        service.findForId(id) == invoices.get(1)
+        service.getById(id).get() == invoices.get(1)
     }
 
     def "should updating not existing invoice throws exception"() {
         when:
-        service.updateInvoice(213, invoices.get(1))
+        service.update(213, invoices.get(1))
 
         then:
         def ex = thrown(IllegalArgumentException)
@@ -88,10 +88,10 @@ class InvoiceServiceIntegrationTest extends Specification {
 
     def "should find for id invoice returns invoice"() {
         given:
-        long id = service.saveInvoice(invoices.get(0))
+        long id = service.save(invoices.get(0))
 
         when:
-        Invoice invoice = service.findForId(id)
+        Invoice invoice = service.getById(id).get()
 
         then:
         invoice == invoices.get(0)
