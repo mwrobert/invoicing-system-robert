@@ -8,26 +8,28 @@ public class IdService {
 
   private final FilesService filesService;
   private final Path idPath;
-  private final Path databasePath;
 
   private long currentId;
 
-  public IdService(Path databasePath, Path idPath, FilesService filesService) {
+  public IdService(Path idPath, FilesService filesService) {
     this.filesService = filesService;
-    this.databasePath = databasePath;
     this.idPath = idPath;
     this.currentId = 0L;
     try {
       if (Files.exists(idPath)) {
-        currentId = Long.parseLong(filesService.readLine(idPath));
+        String idLine = filesService.readLine(idPath);
+        if (!idLine.isEmpty()) {
+          currentId = Long.parseLong(idLine);
+        } else {
+          filesService.writeToFile(idPath, String.valueOf(currentId));
+        }
       } else {
-        filesService.createFile(databasePath.toString());
         filesService.createFile(idPath.toString());
+        filesService.writeToFile(idPath, String.valueOf(currentId));
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("Unable to initialize IdService", e);
     }
-
   }
 
   public long getCurrentIdAndIncrement() {

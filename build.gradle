@@ -10,7 +10,6 @@ plugins {
 
 group = 'pl.futurecollars'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '14'
 
 configurations {
     compileOnly {
@@ -57,23 +56,6 @@ checkstyle {
     maxErrors = 0
 }
 
-jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            limit {
-                counter = 'BRANCH'
-                minimum = 0.9
-            }
-        }
-        rule {
-            limit {
-                counter = 'LINE'
-                minimum = 0.9
-            }
-        }
-    }
-}
-
 test {
     finalizedBy jacocoTestReport // report is always generated after tests run
     finalizedBy jacocoTestCoverageVerification
@@ -86,9 +68,33 @@ jacocoTestReport {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
                     "pl/futurecollars/invoice/controller/*",
-                    "pl/futurecollars/invoice/InvoiceApplication*"		])
+                    "pl/futurecollars/invoice/InvoiceApplication*"
+             ])
         }))
     }
 }
 
-sourceCompatibility = 1.14
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                counter = 'BRANCH'
+                minimum = 0.85
+            }
+        }
+        rule {
+            limit {
+                counter = 'LINE'
+                minimum = 0.85
+            }
+        }
+    }
+    afterEvaluate {
+        getClassDirectories().setFrom(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "pl/futurecollars/invoice/controller/*",
+                    "pl/futurecollars/invoice/InvoiceApplication*"
+            ])
+        })
+    }
+}

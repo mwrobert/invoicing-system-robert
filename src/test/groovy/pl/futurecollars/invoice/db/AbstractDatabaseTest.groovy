@@ -19,8 +19,8 @@ abstract class AbstractDatabaseTest extends Specification {
         def ids = invoices.collect({ database.save(it)})
         then:
         ids == (1L..invoices.size()).collect()
-        ids.forEach({ assert database.findById(it).getId() == it })
-        ids.forEach({ assert database.findById(it).getId() == invoices.get(it as int - 1).getId() })
+        ids.forEach({ assert database.findById(it).get().getId() == it })
+        ids.forEach({ assert database.findById(it).get().getId() == invoices.get(it as int - 1).getId() })
     }
 
     def "should return correct number of invoices saved in database"() {
@@ -33,7 +33,7 @@ abstract class AbstractDatabaseTest extends Specification {
 
     def "should get by id returns null when there is no invoice with given id"() {
         expect:
-        database.findById(1) == null
+        database.findById(1).isEmpty()
     }
 
     def "should get all returns empty collection if there were no invoices"() {
@@ -50,7 +50,7 @@ abstract class AbstractDatabaseTest extends Specification {
         database.getAll().isEmpty()
     }
 
-    def "should the deletion of non-existent invoice not cause any errors"() {
+    def "should the deletion of non-existent invoice returns false"() {
         expect:
         database.delete(123)
     }
@@ -61,7 +61,7 @@ abstract class AbstractDatabaseTest extends Specification {
         when:
         database.update(id, invoices.get(1))
         then:
-        database.findById(id).getId() == invoices.get(0).getId()
+        database.findById(id).get().getId() == invoices.get(0).getId()
     }
 
     def "should updating not existing invoice throws exception"() {

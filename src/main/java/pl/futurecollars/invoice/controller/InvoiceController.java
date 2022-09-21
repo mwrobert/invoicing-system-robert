@@ -1,6 +1,7 @@
 package pl.futurecollars.invoice.controller;
 
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,21 +10,25 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import pl.futurecollars.invoice.db.memory.InMemoryDatabase;
 import pl.futurecollars.invoice.model.Invoice;
 import pl.futurecollars.invoice.service.InvoiceService;
 
 @RestController
 public class InvoiceController {
 
-  private final InvoiceService invoiceService = new InvoiceService(new InMemoryDatabase());
+  private final InvoiceService invoiceService;
 
-  @GetMapping("/invoices/{id}")
+  @Autowired
+  public InvoiceController(InvoiceService invoiceService) {
+    this.invoiceService = invoiceService;
+  }
+
+  @GetMapping(value = "/invoices/{id}", produces = {"application/json;charset=UTF-8"})
   public ResponseEntity<Invoice> getInvoice(@PathVariable long id) {
     return ResponseEntity.of(invoiceService.findForId(id));
   }
 
-  @GetMapping("/invoices")
+  @GetMapping(value = "/invoices", produces = {"application/json;charset=UTF-8"})
   public List<Invoice> getAll() {
     return invoiceService.getAll();
   }

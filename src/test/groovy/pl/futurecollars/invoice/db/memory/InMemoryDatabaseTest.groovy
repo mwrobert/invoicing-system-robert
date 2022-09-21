@@ -5,7 +5,7 @@ import pl.futurecollars.invoice.db.AbstractDatabaseTest
 class InMemoryDatabaseTest extends AbstractDatabaseTest {
 
     def setup() {
-        database = new InMemoryDatabase()
+        database = new MemoryRepository()
     }
 
 }

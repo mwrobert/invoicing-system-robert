@@ -9,10 +9,11 @@ import java.util.List;
 
 public class FilesService {
 
-  public void createFile(String idPath) throws IOException {
+  public Path createFile(String idPath) throws IOException {
     File file = new File(idPath);
     file.getParentFile().mkdirs();
     file.createNewFile();
+    return Path.of(file.getPath());
 
   }
 

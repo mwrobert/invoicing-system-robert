@@ -1,7 +1,7 @@
 package pl.futurecollars.invoice.service
 
 import pl.futurecollars.invoice.db.Database
-import pl.futurecollars.invoice.db.memory.InMemoryDatabase
+import pl.futurecollars.invoice.db.memory.MemoryRepository
 import pl.futurecollars.invoice.model.Invoice
 import spock.lang.Specification
 
@@ -13,7 +13,7 @@ class InvoiceServiceIntegrationTest extends Specification {
     private List<Invoice> invoices
 
     def setup() {
-        Database db = new InMemoryDatabase()
+        Database db = new MemoryRepository()
         service = new InvoiceService(db)
 
         invoices = (1..12).collect { invoice(it) }
@@ -25,12 +25,12 @@ class InvoiceServiceIntegrationTest extends Specification {
 
         then:
         ids.forEach({ assert service.findForId(it) != null })
-        ids.forEach({ assert service.findForId(it).getId() == it })
+        ids.forEach({ assert service.findForId(it).get().getId() == it })
     }
 
     def "should get by id returns null when there is no invoice with given id"() {
         expect:
-        service.findForId(1) == null
+        service.findForId(1).isEmpty()
     }
 
     def "should get all returns empty collection if there were no invoices"() {
@@ -65,7 +65,7 @@ class InvoiceServiceIntegrationTest extends Specification {
 
     def "should deleting not existing invoice is not causing any error"() {
         expect:
-        service.deleteInvoice(123)
+        !service.deleteInvoice(123)
     }
 
     def "should be possible to update the invoice"() {
@@ -77,13 +77,9 @@ class InvoiceServiceIntegrationTest extends Specification {
         service.findForId(id).get() == invoices.get(1)
     }
 
-    def "should updating not existing invoice throws exception"() {
-        when:
-        service.updateInvoice(213, invoices.get(1))
-
-        then:
-        def ex = thrown(IllegalArgumentException)
-        ex.message == "Id 213 does not exist"
+    def "should get false when updating not existing invoice "() {
+        expect:
+        !service.updateInvoice(213, invoices.get(1))
     }
 
     def "should find for id invoice returns invoice"() {

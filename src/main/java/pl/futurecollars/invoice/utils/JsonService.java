@@ -18,7 +18,7 @@ public class JsonService {
     try {
       return mapper.writeValueAsString(object);
     } catch (JsonProcessingException e) {
-      throw new RuntimeException("Failed to convert string to JSON", e);
+      throw new RuntimeException("Failed to convert object to Json", e);
     }
   }
 

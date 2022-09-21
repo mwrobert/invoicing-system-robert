@@ -5,35 +5,20 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 import pl.futurecollars.invoice.db.Database;
 import pl.futurecollars.invoice.model.Invoice;
 import pl.futurecollars.invoice.utils.FilesService;
 import pl.futurecollars.invoice.utils.IdService;
 import pl.futurecollars.invoice.utils.JsonService;
 
-public class FileBasedDatabase implements Database {
+@AllArgsConstructor
+public class FileRepository implements Database {
 
+  private final Path databasePath;
   private final FilesService filesService;
   private final JsonService jsonService;
   private final IdService idService;
-  private final Path databasePath;
-  private final Path idPath;
-
-  public FileBasedDatabase(Path databasePath, Path idPath, FilesService filesService, JsonService jsonService, IdService idService)
-      throws IOException {
-    this.filesService = filesService;
-    this.jsonService = jsonService;
-    this.idService = idService;
-    this.databasePath = databasePath;
-    this.idPath = idPath;
-    initDatabaseFiles(databasePath.toString(), idPath.toString());
-    filesService.writeToFile(idPath, String.valueOf(0L));
-  }
-
-  public void initDatabaseFiles(String databasePath, String idPath) throws IOException {
-    filesService.createFile(databasePath);
-    filesService.createFile(idPath);
-  }
 
   @Override
   public long save(Invoice invoice) {
