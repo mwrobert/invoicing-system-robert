@@ -1,12 +1,10 @@
 package pl.futurecollars.invoice.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
-@ToString
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Company {
