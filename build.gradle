@@ -1,28 +1,22 @@
 buildscript {
     ext {
         lombokVersion = '1.18.24'
-        jacksonVersion = '2.11.1'
-        spockVersion = '2.1-groovy-3.0'
+        spockVersion = '2.2-groovy-3.0'
+        springBootVersion = '2.7.3'
+        springDependencyManagementVersion = '1.0.13.RELEASE'
+        springFoxStarterVersion = '3.0.0'
+        springFoxUiVersion = '3.0.0'
+
     }
 }
 
 plugins {
-    id 'org.springframework.boot' version '2.7.3'
-    id 'io.spring.dependency-management' version '1.0.13.RELEASE'
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
     id 'java'
-    id 'application'
     id 'groovy'
     id 'checkstyle'
     id 'jacoco'
-}
-
-group = 'pl.futurecollars'
-version = '0.0.1-SNAPSHOT'
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
 }
 
 repositories {
@@ -35,21 +29,39 @@ dependencies {
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation "io.springfox:springfox-boot-starter:${springFoxStarterVersion}"
+    implementation "io.springfox:springfox-swagger-ui:${springFoxUiVersion}"
 
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
-    implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion"
-
-    testImplementation "org.spockframework:spock-core:$spockVersion"
     testImplementation "org.spockframework:spock-spring:$spockVersion"
-
+    testImplementation "org.spockframework:spock-core:$spockVersion"
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(14)
+        vendor = JvmVendorSpec.ADOPTOPENJDK
+    }
+}
+
+group = 'pl.futurecollars'
+version = '0.0.1-SNAPSHOT'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+test {
+    finalizedBy jacocoTestReport
+    finalizedBy jacocoTestCoverageVerification
+}
+
 
 tasks.named('test') {
     useJUnitPlatform()
@@ -62,21 +74,12 @@ checkstyle {
     maxErrors = 0
 }
 
-test {
-    finalizedBy jacocoTestReport // report is always generated after tests run
-    finalizedBy jacocoTestCoverageVerification
-}
-
-jacocoTestReport {
-    dependsOn test // tests are required to run before generating the report
-}
-
 jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
                 counter = 'BRANCH'
-                minimum = 0.85
+                minimum = 0.90
             }
         }
         rule {
@@ -88,9 +91,6 @@ jacocoTestCoverageVerification {
     }
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(14)
-        vendor = JvmVendorSpec.ADOPTOPENJDK
-    }
+jacocoTestReport {
+    dependsOn test
 }

@@ -1,6 +1,5 @@
 package pl.futurecollars.invoice.util
 
-import pl.futurecollars.invoice.db.file.FileDatabaseConfiguration
 import pl.futurecollars.invoice.utils.FilesService
 import pl.futurecollars.invoice.utils.IdService
 import spock.lang.Specification
@@ -15,7 +14,7 @@ class IdServiceTest extends Specification {
 
     def "current id if file was empty"() {
         given:
-        IdService idService = new FileDatabaseConfiguration().idService(new FilesService())
+        IdService idService = new IdService(idPath, filesService)
 
         expect:
         1L == idService.getCurrentIdAndIncrement()
@@ -29,8 +28,11 @@ class IdServiceTest extends Specification {
 
     def "current id from last number if file was not empty"() {
         given:
+        createFile(idPath)
         Files.writeString(idPath, "16")
-        IdService idService = new IdService(idPath, new FilesService())
+
+        var filesService = new FilesService()
+        IdService idService = new IdService(idPath, filesService)
 
         expect:
         17L == idService.getCurrentIdAndIncrement()
@@ -40,11 +42,14 @@ class IdServiceTest extends Specification {
 
         and:
         19L == idService.getCurrentIdAndIncrement()
+
+        cleanup:
+        deleteTestFile(idPath)
     }
 
     def "current id if it isn't file"() {
         given:
-        IdService idService = new FileDatabaseConfiguration().idService(new FilesService())
+        IdService idService = new IdService(idPath, filesService)
 
         expect:
         1L == idService.getCurrentIdAndIncrement()
@@ -61,7 +66,7 @@ class IdServiceTest extends Specification {
         filesService.createFile("test_db/nextId.txt") >> idPath
 
         when:
-        IdService idService = new FileDatabaseConfiguration().idService(filesService)
+        IdService idService = new IdService(idPath, filesService)
 
         then:
         idService != null
@@ -73,15 +78,26 @@ class IdServiceTest extends Specification {
         filesService.writeToFile(idPath,"1") >> {throw new IOException()}
 
         when:
-        new FileDatabaseConfiguration().idService(filesService).getCurrentIdAndIncrement()
+        new IdService(idPath, filesService).getCurrentIdAndIncrement()
 
         then:
         def exception = thrown(RuntimeException)
         exception.message == "Unable to initialize repository"
     }
 
+    def createFile(Path path) {
+        Files.createDirectories(path.getParent())
+        Files.createFile(path)
+    }
+
+    def deleteTestFile(Path path) {
+        Files.deleteIfExists(path)
+        Files.deleteIfExists(path.getParent())
+
+    }
+
     def cleanup() {
-        Files.deleteIfExists(idPath)
+        deleteTestFile(idPath)
     }
 
 }

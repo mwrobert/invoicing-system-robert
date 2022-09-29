@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="InvoiceApplication-prod" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="pl.futurecollars.invoice.InvoiceApplication" />
+    <module name="invoicing-system-joanna-biegala.main" />
+    <option name="PROGRAM_PARAMETERS" value="--spring.profiles.active=prod" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="pl.futurecollars.invoice.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

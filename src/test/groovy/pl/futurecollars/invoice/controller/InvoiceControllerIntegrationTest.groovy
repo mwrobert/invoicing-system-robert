@@ -59,7 +59,7 @@ class InvoiceControllerIntegrationTest extends Specification {
 
         then:
         invoices.size() == numberOfInvoices
-   }
+    }
 
     def "should correct invoice is returned when getting by id"() {
         given:
@@ -132,7 +132,6 @@ class InvoiceControllerIntegrationTest extends Specification {
                         .contentType(MediaType.APPLICATION_JSON)
         )
                 .andExpect(status().isOk())
-
     }
 
     def "should invoice can be deleted"() {

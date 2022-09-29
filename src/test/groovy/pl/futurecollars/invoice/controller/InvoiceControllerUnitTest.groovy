@@ -63,9 +63,7 @@ class InvoiceControllerUnitTest extends Specification {
                 .andReturn()
                 .response
                 .contentAsString.isEmpty()
-
     }
-
 
     def "should get status 404 when you try to delete invoice from empty database"() {
         expect:
@@ -137,7 +135,6 @@ class InvoiceControllerUnitTest extends Specification {
                 .andReturn()
                 .response
                 .contentAsString.isEmpty()
-
     }
 
     def "should delete invoice"() {
@@ -161,7 +158,6 @@ class InvoiceControllerUnitTest extends Specification {
                 .contentAsString.isEmpty()
     }
 
-
     private List<Invoice> getAllInvoices() {
         def response = mockMvc.perform(
                 MockMvcRequestBuilders.get("/invoices")
@@ -175,9 +171,9 @@ class InvoiceControllerUnitTest extends Specification {
     }
 
     private ResultActions deleteInvoice(long id) {
-        mockMvc.perform( MockMvcRequestBuilders.delete("/invoices/$id"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/invoices/$id"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-     }
+    }
 
     def setupSpec() {
         resetFile("test_db/invoices.json")
@@ -195,6 +191,7 @@ class InvoiceControllerUnitTest extends Specification {
             Files.deleteIfExists(path)
             Files.createFile(path)
         } else {
+            Files.createDirectories(path.getParent())
             Files.createFile(path)
         }
     }

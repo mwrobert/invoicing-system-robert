@@ -2,6 +2,7 @@ package pl.futurecollars.invoice.db.file
 
 import pl.futurecollars.invoice.db.AbstractDatabaseTest
 import pl.futurecollars.invoice.utils.FilesService
+import pl.futurecollars.invoice.utils.IdService
 import pl.futurecollars.invoice.utils.JsonService
 
 import java.nio.file.Files
@@ -16,9 +17,12 @@ class FileBasedDatabaseIntegrationTest extends AbstractDatabaseTest {
 
     def setup() {
         def filesService = new FilesService()
-        def idService = new FileDatabaseConfiguration().idService(filesService)
+        def idService = new IdService(idPath, filesService)
         def jsonService = new JsonService()
-        database = new FileDatabaseConfiguration().fileRepository(filesService, jsonService, idService)
+
+        filesService.createFile(databasePath.toString())
+        filesService.createFile(idPath.toString())
+        database = new FileRepository(databasePath, filesService, jsonService, idService)
     }
 
     def "should file based database writes invoices to correct file"() {
@@ -38,6 +42,8 @@ class FileBasedDatabaseIntegrationTest extends AbstractDatabaseTest {
     def cleanup() {
         Files.deleteIfExists(idPath)
         Files.deleteIfExists(databasePath)
+        Files.deleteIfExists(idPath.getParent())
+        Files.deleteIfExists(databasePath.getParent())
     }
 
 }
