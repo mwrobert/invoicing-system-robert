@@ -6,7 +6,6 @@ buildscript {
         springDependencyManagementVersion = '1.0.13.RELEASE'
         springFoxStarterVersion = '3.0.0'
         springFoxUiVersion = '3.0.0'
-
     }
 }
 
@@ -61,7 +60,6 @@ test {
     finalizedBy jacocoTestReport
     finalizedBy jacocoTestCoverageVerification
 }
-
 
 tasks.named('test') {
     useJUnitPlatform()
