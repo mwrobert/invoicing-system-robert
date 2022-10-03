@@ -1,4 +1,4 @@
-package pl.futurecollars.invoice.controller;
+package pl.futurecollars.invoice.controller.invoice;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

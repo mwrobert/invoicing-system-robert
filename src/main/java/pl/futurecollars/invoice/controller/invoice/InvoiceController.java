@@ -1,4 +1,4 @@
-package pl.futurecollars.invoice.controller;
+package pl.futurecollars.invoice.controller.invoice;
 
 import java.util.List;
 import org.springframework.http.ResponseEntity;

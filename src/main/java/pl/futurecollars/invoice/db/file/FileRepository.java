@@ -56,8 +56,8 @@ public class FileRepository implements Database {
       final Invoice invoice = jsonService.toObject(invoiceAsJson, Invoice.class);
 
       invoice.setDate(updatedInvoice.getDate());
-      invoice.setFromCompany(updatedInvoice.getFromCompany());
-      invoice.setToCompany(updatedInvoice.getToCompany());
+      invoice.setSeller(updatedInvoice.getSeller());
+      invoice.setBuyer(updatedInvoice.getBuyer());
       invoice.setInvoiceEntries(updatedInvoice.getInvoiceEntries());
 
       allInvoices.add(jsonService.toJson(invoice));
