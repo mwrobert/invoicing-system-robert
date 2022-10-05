@@ -13,14 +13,38 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TaxCalculatorResult {
 
-  @ApiModelProperty(value = "Income (calculated by application)", required = true, example = "100000")
+  @ApiModelProperty(value = "Company income (calculated by application)", required = true, example = "76011,62")
   private BigDecimal income;
 
-  @ApiModelProperty(value = "Costs (calculated by application)", required = true, example = "10000")
+  @ApiModelProperty(value = "Company costs (calculated by application)", required = true, example = "11329,47")
   private BigDecimal costs;
 
-  @ApiModelProperty(value = "Earnings (calculated by application)", required = true, example = "90000")
-  private BigDecimal earnings;
+  @ApiModelProperty(value = "Company income minus costs (calculated by application)", required = true, example = "64682,15")
+  private BigDecimal incomeMinusCosts;
+
+  @ApiModelProperty(value = "Company pension insurance (calculated by application)", required = true, example = "514,57")
+  private BigDecimal pensionInsurance;
+
+  @ApiModelProperty(value = "Company income minus costs and pension insurance (calculated by application)", required = true, example = "64167,58")
+  private BigDecimal incomeMinusCostsAndPensionInsurance;
+
+  @ApiModelProperty(value = "Company tax calculation base (calculated by application)", required = true, example = "64168,00")
+  private BigDecimal taxCalculationBase;
+
+  @ApiModelProperty(value = "Company 19% income tax(calculated by application)", required = true, example = "12191,92")
+  private BigDecimal incomeTax;
+
+  @ApiModelProperty(value = "9% of company health insurance (calculated by application)", required = true, example = "319,94")
+  private BigDecimal healthInsurance;
+
+  @ApiModelProperty(value = "Deducible 7,75% of company health insurance (calculated by application)", required = true, example = "275,50")
+  private BigDecimal healthInsuranceDeductible;
+
+  @ApiModelProperty(value = "Company income tax minus deductible health insurance (calculated by application)", required = true, example = "11916,42")
+  private BigDecimal incomeTaxMinusHealthInsurance;
+
+  @ApiModelProperty(value = "Company final income tax(calculated by application)", required = true, example = "11916,00 ")
+  private BigDecimal finalIncomeTax;
 
   @ApiModelProperty(value = "Collected VAT (calculated by application)", required = true, example = "23000")
   private BigDecimal incomingVat;

@@ -3,6 +3,8 @@ package pl.futurecollars.invoice.controller
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import pl.futurecollars.invoice.model.Company
 import pl.futurecollars.invoice.model.Invoice
 import pl.futurecollars.invoice.service.TaxCalculatorResult
 import pl.futurecollars.invoice.utils.JsonService
@@ -80,13 +82,17 @@ class AbstractControllerTest extends Specification {
         }
     }
 
-    TaxCalculatorResult getTaxCalculatorResult(String taxIdentificationNumber) {
-        def response = mockMvc.perform(
-                get("$TAX_ENDPOINT$taxIdentificationNumber"))
-                .andExpect(status().isOk())
-                .andReturn()
-                .response
-                .contentAsString
+
+    TaxCalculatorResult getTaxCalculatorResult(Company company) {
+        def response =
+                mockMvc.perform(
+                        MockMvcRequestBuilders.post(TAX_ENDPOINT).content(getCompanyAsJson(company))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .response
+                        .contentAsString
 
         jsonService.toObject(response, TaxCalculatorResult)
     }
@@ -97,6 +103,10 @@ class AbstractControllerTest extends Specification {
 
     def getInvoiceAsObject(String invoiceAsJson) {
         jsonService.toObject(invoiceAsJson, Invoice)
+    }
+
+    def getCompanyAsJson(Company company) {
+        jsonService.toJson(company)
     }
 
     def setupSpec() {
