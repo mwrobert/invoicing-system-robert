@@ -1,11 +1,14 @@
 buildscript {
     ext {
+        flywayVersion = '9.4.0'
+        h2Version = '2.1.214'
         lombokVersion = '1.18.24'
-        spockVersion = '2.2-groovy-3.0'
+        spockVersion = '2.3-groovy-3.0'
         springBootVersion = '2.7.3'
         springDependencyManagementVersion = '1.0.13.RELEASE'
         springFoxStarterVersion = '3.0.0'
         springFoxUiVersion = '3.0.0'
+        postgresqlVersion = '42.5.0'
     }
 }
 
@@ -26,18 +29,25 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    compileOnly "org.flywaydb:flyway-core:${flywayVersion}"
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation "org.springframework.boot:spring-boot-starter-jdbc"
     implementation "io.springfox:springfox-boot-starter:${springFoxStarterVersion}"
     implementation "io.springfox:springfox-swagger-ui:${springFoxUiVersion}"
+    implementation "org.flywaydb:flyway-core:${flywayVersion}"
+
+    runtimeOnly "com.h2database:h2:${h2Version}"
+    runtimeOnly "org.postgresql:postgresql:${postgresqlVersion}"
 
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
 
-    testImplementation "org.spockframework:spock-spring:$spockVersion"
-    testImplementation "org.spockframework:spock-core:$spockVersion"
+    testImplementation "org.spockframework:spock-spring:${spockVersion}"
+    testImplementation "org.spockframework:spock-core:${spockVersion}"
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
 }
 
 java {
@@ -92,3 +102,21 @@ jacocoTestCoverageVerification {
 jacocoTestReport {
     dependsOn test
 }
+
+task testWithFileDatabase(type: Test) {
+    systemProperty 'spring.profiles.active', 'file'
+    useJUnitPlatform()
+}
+
+task testWithMemoryDatabase(type: Test) {
+    systemProperty 'spring.profiles.active', 'memory'
+    useJUnitPlatform()
+}
+
+task testWithSQLDatabase(type: Test) {
+    systemProperty 'spring.profiles.active', 'sql'
+}
+
+check.dependsOn testWithFileDatabase
+check.dependsOn testWithMemoryDatabase
+//check.dependsOn testWithSqlDatabase

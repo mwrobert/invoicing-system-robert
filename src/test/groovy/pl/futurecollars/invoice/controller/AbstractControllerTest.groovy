@@ -86,7 +86,7 @@ class AbstractControllerTest extends Specification {
     TaxCalculatorResult getTaxCalculatorResult(Company company) {
         def response =
                 mockMvc.perform(
-                        MockMvcRequestBuilders.post(TAX_ENDPOINT).content(getCompanyAsJson(company))
+                        post(TAX_ENDPOINT).content(getCompanyAsJson(company))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                         .andExpect(status().isOk())

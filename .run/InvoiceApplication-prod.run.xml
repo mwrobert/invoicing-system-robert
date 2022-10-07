@@ -2,7 +2,7 @@
   <configuration default="false" name="InvoiceApplication-prod" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="pl.futurecollars.invoice.InvoiceApplication" />
     <module name="invoicing-system-joanna-biegala.main" />
-    <option name="PROGRAM_PARAMETERS" value="--spring.profiles.active=prod" />
+    <option name="PROGRAM_PARAMETERS" value="--spring.profiles.active=file" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="pl.futurecollars.invoice.*" />

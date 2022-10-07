@@ -6,7 +6,6 @@ public enum Vat {
 
   Vat_23(23),
   Vat_8(8),
-  Vat_7(7),
   Vat_5(5),
   Vat_0(0),
   Vat_ZW(0);
