@@ -1,9 +1,20 @@
 package pl.futurecollars.invoice.db;
 
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+
+import com.mongodb.MongoClientSettings;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
 import java.io.IOException;
 import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +23,10 @@ import pl.futurecollars.invoice.db.file.FileRepository;
 import pl.futurecollars.invoice.db.jpa.InvoiceRepository;
 import pl.futurecollars.invoice.db.jpa.JpaDatabase;
 import pl.futurecollars.invoice.db.memory.MemoryRepository;
+import pl.futurecollars.invoice.db.nosql.MongoBasedDatabase;
+import pl.futurecollars.invoice.db.nosql.MongoIdProvider;
 import pl.futurecollars.invoice.db.sql.SqlDatabase;
+import pl.futurecollars.invoice.model.Invoice;
 import pl.futurecollars.invoice.utils.FilesService;
 import pl.futurecollars.invoice.utils.IdService;
 import pl.futurecollars.invoice.utils.JsonService;
@@ -20,6 +34,38 @@ import pl.futurecollars.invoice.utils.JsonService;
 @Slf4j
 @Configuration
 public class DatabaseConfiguration {
+
+  @Bean
+  @ConditionalOnProperty(value = "database.type", havingValue = "mongo")
+  public MongoDatabase mongoDatabase(
+      @Value("${database.name}") String databaseName) {
+    CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
+        fromProviders(PojoCodecProvider.builder().automatic(true).build()));
+
+    MongoClientSettings settings = MongoClientSettings.builder()
+        .codecRegistry(codecRegistry)
+        .build();
+
+    MongoClient mongoClient = MongoClients.create(settings);
+
+    return mongoClient.getDatabase(databaseName);
+  }
+
+  @Bean
+  @ConditionalOnProperty(value = "database.type", havingValue = "mongo")
+  public MongoIdProvider mongoIdProvider(
+      @Value("${database.counter.collection}") String collectionName, MongoDatabase mongoDatabase) {
+    return new MongoIdProvider(mongoDatabase.getCollection(collectionName, Document.class));
+  }
+
+  @Bean
+  @ConditionalOnProperty(value = "database.type", havingValue = "mongo")
+  public Database mongoBasedDatabase(@Value("${database.collection}") String collectionName,
+                                     MongoDatabase mongoDatabase,
+                                     MongoIdProvider mongoIdProvider) {
+    log.info("Running on nosql database");
+    return new MongoBasedDatabase(mongoDatabase.getCollection(collectionName, Invoice.class), mongoIdProvider);
+  }
 
   @Bean
   @ConditionalOnProperty(value = "database.type", havingValue = "jpa")
@@ -36,19 +82,19 @@ public class DatabaseConfiguration {
   }
 
   @Bean
-  @ConditionalOnProperty(value = "database.type", havingValue = "in-file")
+  @ConditionalOnProperty(value = "database.type", havingValue = "infile")
   public FilesService filesService() {
     return new FilesService();
   }
 
   @Bean
-  @ConditionalOnProperty(value = "database.type", havingValue = "in-file")
+  @ConditionalOnExpression("'${database.type}'.equals('infile') or '${database.type}'.equals('mongo')")
   public JsonService jsonService() {
     return new JsonService();
   }
 
   @Bean
-  @ConditionalOnProperty(value = "database.type", havingValue = "in-file")
+  @ConditionalOnProperty(value = "database.type", havingValue = "infile")
   public IdService idService(
       FilesService filesService,
       @Value("${database.idPath}") String idPathString) throws IOException {
@@ -58,7 +104,7 @@ public class DatabaseConfiguration {
   }
 
   @Bean
-  @ConditionalOnProperty(value = "database.type", havingValue = "in-file")
+  @ConditionalOnProperty(value = "database.type", havingValue = "infile")
   public Database fileRepository(
       FilesService filesService,
       JsonService jsonService,

@@ -1,8 +1,15 @@
 package pl.futurecollars.invoice.controller
 
+import com.mongodb.client.MongoDatabase
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.ApplicationContext
 import org.springframework.http.MediaType
+import org.springframework.test.annotation.IfProfileValue
+import pl.futurecollars.invoice.db.nosql.MongoBasedDatabase
+import spock.lang.Requires
+import spock.lang.Stepwise
 import spock.lang.Unroll
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
@@ -15,7 +22,18 @@ import static pl.futurecollars.invoice.TestHelpers.thirdInvoice
 @AutoConfigureMockMvc
 @SpringBootTest
 @Unroll
+@Stepwise
 class InvoiceControllerIntegrationTest extends AbstractControllerTest {
+
+    @Autowired
+    private ApplicationContext context
+
+    @Requires({ System.getProperty('spring.profiles.active', '').contains('mongo')})
+    def "database is dropped to ensure clean state"() {
+        expect:
+        MongoDatabase mongoDatabase = context.getBean(MongoDatabase)
+        mongoDatabase.drop()
+    }
 
     def "should return empty array when database is empty"() {
         expect:

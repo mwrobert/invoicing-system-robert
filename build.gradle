@@ -3,12 +3,13 @@ buildscript {
         flywayVersion = '9.4.0'
         h2Version = '2.1.214'
         lombokVersion = '1.18.24'
+        mongoVersion = '3.12.8'
+        postgresqlVersion = '42.5.0'
         spockVersion = '2.3-groovy-3.0'
         springBootVersion = '2.7.3'
         springDependencyManagementVersion = '1.0.13.RELEASE'
         springFoxStarterVersion = '3.0.0'
         springFoxUiVersion = '3.0.0'
-        postgresqlVersion = '42.5.0'
     }
 }
 
@@ -37,6 +38,7 @@ dependencies {
     implementation "io.springfox:springfox-boot-starter:${springFoxStarterVersion}"
     implementation "io.springfox:springfox-swagger-ui:${springFoxUiVersion}"
     implementation "org.flywaydb:flyway-core:${flywayVersion}"
+    implementation "org.mongodb:mongo-java-driver:${mongoVersion}"
 
     runtimeOnly "com.h2database:h2:${h2Version}"
     runtimeOnly "org.postgresql:postgresql:${postgresqlVersion}"
@@ -51,39 +53,11 @@ dependencies {
 
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(14)
-        vendor = JvmVendorSpec.ADOPTOPENJDK
-    }
-}
-
 group = 'pl.futurecollars'
 version = '0.0.1-SNAPSHOT'
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
-test {
-    finalizedBy jacocoTestReport
-    finalizedBy jacocoTestCoverageVerification
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
-}
-
-checkstyle {
-    showViolations = true
-    ignoreFailures = false
-    maxWarnings = 0
-    maxErrors = 0
-}
-
 jacocoTestCoverageVerification {
+    executionData tasks.withType(Test)
     violationRules {
         rule {
             limit {
@@ -94,14 +68,43 @@ jacocoTestCoverageVerification {
         rule {
             limit {
                 counter = 'LINE'
-                minimum = 0.85
+                minimum = 0.90
             }
         }
     }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: ['pl/futurecollars/invoicing/InvoiceApplication.class', 'pl/futurecollars/invoicing/db/DatabaseConfiguration.class'])
+        }))
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(14)
+        vendor = JvmVendorSpec.ADOPTOPENJDK
+    }
+}
+
+check {
+    finalizedBy jacocoTestReport
+}
+
+check {
+    finalizedBy jacocoTestCoverageVerification
 }
 
 jacocoTestReport {
-    dependsOn test
+    executionData tasks.withType(Test)
+    dependsOn check
+}
+
+checkstyle {
+    showViolations = true
+    ignoreFailures = false
+    maxWarnings = 0
+    maxErrors = 0
 }
 
 task testWithFileDatabase(type: Test) {
@@ -129,8 +132,14 @@ task testWithJpaFlywayDatabase(type: Test) {
     useJUnitPlatform()
 }
 
+task testWithMongoDatabase(type: Test) {
+    systemProperty 'spring.profiles.active', 'mongo'
+    useJUnitPlatform()
+}
+
 check.dependsOn testWithFileDatabase
 check.dependsOn testWithMemoryDatabase
 check.dependsOn testWithSqlDatabase
 check.dependsOn testWithJpaDatabase
 check.dependsOn testWithJpaFlywayDatabase
+check.dependsOn testWithMongoDatabase
