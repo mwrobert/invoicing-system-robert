@@ -87,7 +87,7 @@ jacocoTestCoverageVerification {
         rule {
             limit {
                 counter = 'BRANCH'
-                minimum = 0.90
+                minimum = 0.80
             }
         }
         rule {
@@ -113,10 +113,11 @@ task testWithMemoryDatabase(type: Test) {
     useJUnitPlatform()
 }
 
-task testWithSQLDatabase(type: Test) {
+task testWithSqlDatabase(type: Test) {
     systemProperty 'spring.profiles.active', 'sql'
+    useJUnitPlatform()
 }
 
 check.dependsOn testWithFileDatabase
 check.dependsOn testWithMemoryDatabase
-//check.dependsOn testWithSqlDatabase
+check.dependsOn testWithSqlDatabase

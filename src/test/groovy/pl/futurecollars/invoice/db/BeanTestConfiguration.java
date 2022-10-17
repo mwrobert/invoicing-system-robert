@@ -10,7 +10,13 @@ public class BeanTestConfiguration {
 
   @Bean
   @ConditionalOnProperty(value = "database.type", havingValue = "in-memory")
-  public JsonService jsonService() {
+  public JsonService jsonInMemoryService() {
+    return new JsonService();
+  }
+
+  @Bean
+  @ConditionalOnProperty(value = "database.type", havingValue = "sql")
+  public JsonService jsonSqlService() {
     return new JsonService();
   }
 

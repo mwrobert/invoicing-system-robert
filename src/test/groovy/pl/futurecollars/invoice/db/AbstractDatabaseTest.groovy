@@ -7,20 +7,19 @@ import static pl.futurecollars.invoice.TestHelpers.invoice
 
 abstract class AbstractDatabaseTest extends Specification {
 
-    protected Database database
-    protected List<Invoice> invoices
+    Database database = getDatabaseInstance()
+    List<Invoice> invoices = (1L..12L).collect { invoice(it) }
 
-    def setup() {
-        invoices = (1L..12L).collect { invoice(it) }
-    }
+    abstract Database getDatabaseInstance()
 
     def "should save invoices returning sequential id, id should have correct value, findById should return saved invoice"() {
         when:
-        def ids = invoices.collect({ database.save(it)})
+        def ids = invoices.collect({it.id = database.save(it) })
         then:
         ids == (1L..invoices.size()).collect()
+        ids.forEach({ assert database.findById(it).isPresent() })
         ids.forEach({ assert database.findById(it).get().getId() == it })
-        ids.forEach({ assert database.findById(it).get().getId() == invoices.get(it as int - 1).getId() })
+        ids.forEach({ assert resetIds(database.findById(it).get()) == invoices.get(it as int - 1) })
     }
 
     def "should return correct number of invoices saved in database"() {
@@ -31,7 +30,7 @@ abstract class AbstractDatabaseTest extends Specification {
         assert database.getAll().size() == invoices.size()
     }
 
-    def "should get by id returns null when there is no invoice with given id"() {
+    def "find by id should returns null when there is no invoice with given id"() {
         expect:
         database.findById(1).isEmpty()
     }
@@ -41,49 +40,43 @@ abstract class AbstractDatabaseTest extends Specification {
         database.getAll().isEmpty()
     }
 
-    def "should the database be empty when all invoices are deleted"() {
+    def "the database should be empty when all invoices are deleted"() {
         given:
-        invoices.forEach({ database.save(it) })
+        invoices.forEach({it.id = database.save(it) })
         when:
         invoices.forEach({ database.delete(it.getId()) })
         then:
         database.getAll().isEmpty()
     }
 
-    def "should the deletion of non-existent invoice returns false"() {
-        expect:
-        database.delete(123)
-    }
-
     def "should be possible to update the invoice"() {
         given:
-        long id = database.save(invoices.get(0))
+        def originalInvoice = invoices.get(0)
+        originalInvoice.id = database.save(originalInvoice)
+        def expectedInvoice = invoices.get(1)
+        expectedInvoice.id = originalInvoice.id
         when:
-        database.update(id, invoices.get(1))
+        database.update(originalInvoice.id, expectedInvoice)
         then:
-        database.findById(id).get().getId() == invoices.get(0).getId()
+        def updatedInvoice = database.findById(originalInvoice.id).get()
+        resetIds(updatedInvoice) == expectedInvoice
     }
 
-    def "should updating not existing invoice throws exception"() {
-        when:
-        database.update(213, invoices.get(1))
-        then:
-        def ex = thrown(IllegalArgumentException)
-        ex.message == "Id 213 does not exist"
-    }
-
-    def "should get all returns all invoices in the database, should deleted invoice is not returned"() {
+    def "getting all should returns all invoices in the database, deleted invoice should not be returned"() {
         given:
         invoices.forEach({ database.save(it) })
         expect:
         database.getAll().size() == invoices.size()
-        database.getAll().forEach({ assert it.getId() == invoices.get(it.getId() - 1 as int).getId() })
         when:
         database.delete(1)
         then:
         database.getAll().size() == invoices.size() - 1
-        database.getAll().forEach({ assert it.getId() == invoices.get(it.getId() - 1 as int).getId() })
-        database.getAll().forEach({ assert it.getId() != 1 })
+    }
+
+    static Invoice resetIds(Invoice invoice) {
+        invoice.getBuyer().id = 0
+        invoice.getSeller().id = 0
+        return invoice
     }
 
 }

@@ -12,7 +12,7 @@ import java.nio.file.Path
 
 import static pl.futurecollars.invoice.TestHelpers.invoice
 
-class FileBasedDatabaseUnitTest extends Specification {
+class FileRepositoryUnitTest extends Specification {
 
     private final databasePath = Path.of("test_db/invoices.json")
     private final FilesService filesServiceMock = Mock(FilesService)

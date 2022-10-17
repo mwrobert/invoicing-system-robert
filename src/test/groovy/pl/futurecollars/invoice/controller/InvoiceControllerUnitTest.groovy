@@ -107,9 +107,23 @@ class InvoiceControllerUnitTest extends Specification {
     }
 
     def "should get invoice"() {
+
+        def invoice = TestHelpers.invoice(1)
+        def invoiceAsJson = jsonService.toJson(invoice)
+
+        def savedInvoiceId = mockMvc.perform(
+                MockMvcRequestBuilders.post("/invoices").content(invoiceAsJson)
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn()
+                .getResponse()
+                .contentAsString
+
         expect:
         mockMvc.perform(
-                MockMvcRequestBuilders.get("/invoices/1")
+                MockMvcRequestBuilders.get("/invoices/" + savedInvoiceId)
         )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -118,29 +132,55 @@ class InvoiceControllerUnitTest extends Specification {
                 .contentAsString
     }
 
-    def "should updated invoice is returned correctly when getting by id"() {
+    def "should return status 200 and properly update existing invoice"() {
         given:
-        def originalInvoice = TestHelpers.invoice(1)
-        def expectedInvoice = originalInvoice
-        expectedInvoice.id = 1
-        expectedInvoice.date = LocalDate.now()
-        def expectedInvoiceAsJson = jsonService.toJson(expectedInvoice)
-        expect:
-        mockMvc.perform(
-                MockMvcRequestBuilders.put("/invoices/1")
-                        .content(expectedInvoiceAsJson)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk())
+        def id = mockMvc.perform(
+                MockMvcRequestBuilders
+                        .post("/invoices/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonService.toJson(TestHelpers.firstInvoice)))
                 .andReturn()
-                .response
-                .contentAsString.isEmpty()
+                .getResponse()
+                .contentAsString
+
+        def invoiceToUpdate = TestHelpers.secondInvoice
+
+        when:
+        def responseUpdate = mockMvc.perform(
+                MockMvcRequestBuilders
+                        .put("/invoices/" + id)
+                        .content(jsonService.toJson(invoiceToUpdate))
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
+
+        invoiceToUpdate.setId(Long.valueOf(id))
+        def responseFindById = mockMvc.perform(MockMvcRequestBuilders.get("/invoices/" + id))
+
+
+        then:
+        responseUpdate.andExpect(MockMvcResultMatchers.status().isOk())
+        responseFindById.andReturn().getResponse().contentAsString == jsonService.toJson(invoiceToUpdate)
+
     }
 
     def "should delete invoice"() {
+
+        def invoice = TestHelpers.invoice(1)
+        def invoiceAsJson = jsonService.toJson(invoice)
+
+        def savedInvoiceId = mockMvc.perform(
+                MockMvcRequestBuilders.post("/invoices").content(invoiceAsJson)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn()
+                .getResponse()
+                .contentAsString
+
         expect:
         mockMvc.perform(
-                MockMvcRequestBuilders.delete("/invoices/1")
+                MockMvcRequestBuilders.delete("/invoices/" + savedInvoiceId)
         )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -149,7 +189,7 @@ class InvoiceControllerUnitTest extends Specification {
                 .contentAsString.isEmpty()
         and:
         mockMvc.perform(
-                MockMvcRequestBuilders.get("/invoices/1")
+                MockMvcRequestBuilders.get("/invoices/" + savedInvoiceId)
         )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound())

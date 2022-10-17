@@ -11,48 +11,99 @@ import java.time.LocalDate
 class TestHelpers {
 
     static company(long id) {
-        new Company(("iCode Trust $id Sp. z o.o"),
-                ("$id").repeat(10),
-                "ul. Nowa 24d/$id 02-703 Warszawa, Polska",
-                BigDecimal.valueOf(500),
-                BigDecimal.valueOf(1400))
+        Company.builder()
+            .name(("iCode Trust $id Sp. z o.o"))
+            .taxIdentificationNumber(("$id").repeat(10))
+            .address("ul. Nowa 24d/$id 02-703 Warszawa, Polska")
+            .healthInsurance(BigDecimal.valueOf(500).setScale(2))
+            .pensionInsurance(BigDecimal.valueOf(1400).setScale(2))
+            .build()
     }
 
     static product(long id) {
-        new InvoiceEntry("Programming course $id", BigDecimal.ONE, BigDecimal.valueOf(id * 1000), BigDecimal.valueOf(id * 1000 * 0.08), Vat.Vat_8, null)
+        new InvoiceEntry("Programming course $id",
+                BigDecimal.valueOf(1).setScale(2),
+                BigDecimal.valueOf(id * 1000).setScale(2),
+                BigDecimal.valueOf(id * 1000 * 0.08).setScale(2),
+                Vat.Vat_8, null)
     }
 
     static invoice(long id) {
-        new Invoice(LocalDate.now(), company(id), company(id), List.of(product(id)))
+        Invoice.builder()
+            .date(LocalDate.now())
+            .number("2022/10/12/0000$id")
+            .seller(company(id))
+            .buyer(company(id + 1))
+            .invoiceEntries(List.of(product(id)))
+            .build()
     }
 
-    static Company firstCompany = new Company("First", "1111111111", "ul. Pierwsza 1, Warszawa, Polska", BigDecimal.valueOf(500), BigDecimal.valueOf(1400))
+    static Company firstCompany = Company.builder()
+            .name("First")
+            .taxIdentificationNumber("1111111111")
+            .address("ul. Pierwsza 1, Warszawa, Polska")
+            .healthInsurance(BigDecimal.valueOf(500).setScale(2))
+            .pensionInsurance(BigDecimal.valueOf(1400).setScale(2))
+            .build()
 
-    static Company secondCompany = new Company("Second", "2222222222", "ul. Druga 2, Warszawa, Polska", BigDecimal.valueOf(500), BigDecimal.valueOf(1400))
-
+    static Company secondCompany = Company.builder()
+            .name("Second")
+            .taxIdentificationNumber("2222222222")
+            .address("ul. Druga 2, Warszawa, Polska")
+            .healthInsurance(BigDecimal.valueOf(500).setScale(2))
+            .pensionInsurance(BigDecimal.valueOf(1400).setScale(2))
+            .build()
 
     static Car firstCar = new Car("AAA 12 34", true)
 
     static Car secondCar = new Car("BBB 12 34", false)
 
+    static InvoiceEntry firstEntry = new InvoiceEntry("First product", BigDecimal.valueOf(1).setScale(2), BigDecimal.valueOf(10000).setScale(2), BigDecimal.valueOf(10000 * 0.23).setScale(2), Vat.Vat_23, null)
 
-    static InvoiceEntry firstEntry = new InvoiceEntry("First product", BigDecimal.ONE, BigDecimal.valueOf(10000), BigDecimal.valueOf(10000 * 0.23), Vat.Vat_23, null)
+    static InvoiceEntry secondEntry = new InvoiceEntry("Second product", BigDecimal.valueOf(10).setScale(2), BigDecimal.valueOf(5000).setScale(2), BigDecimal.valueOf(5000 * 0.05).setScale(2), Vat.Vat_5, null)
 
-    static InvoiceEntry secondEntry = new InvoiceEntry("Second product", BigDecimal.TEN, BigDecimal.valueOf(5000), BigDecimal.valueOf(5000 * 0.05), Vat.Vat_5, null)
+    static InvoiceEntry thirdEntry = new InvoiceEntry("Third product", BigDecimal.valueOf(1).setScale(2), BigDecimal.valueOf(10000).setScale(2), BigDecimal.valueOf(10000 * 0.23).setScale(2), Vat.Vat_23, firstCar)
 
-    static InvoiceEntry thirdEntry = new InvoiceEntry("Third product", BigDecimal.ONE, BigDecimal.valueOf(10000), BigDecimal.valueOf(10000 * 0.23), Vat.Vat_23, firstCar)
+    static InvoiceEntry fifthEntry = new InvoiceEntry("Third product", BigDecimal.valueOf(1).setScale(2), BigDecimal.valueOf(10000).setScale(2), BigDecimal.valueOf(10000 * 0.23).setScale(2), Vat.Vat_23, secondCar)
 
-    static InvoiceEntry fifthEntry = new InvoiceEntry("Third product", BigDecimal.ONE, BigDecimal.valueOf(10000), BigDecimal.valueOf(10000 * 0.23), Vat.Vat_23, secondCar)
+    static Invoice firstInvoice = Invoice.builder()
+            .date(LocalDate.of(2022, 10, 1))
+            .number("2022/10/12/00001")
+            .seller(firstCompany)
+            .buyer(secondCompany)
+            .invoiceEntries(List.of(firstEntry))
+            .build()
 
+    static Invoice secondInvoice = Invoice.builder()
+            .date(LocalDate.of(2022, 10, 1))
+            .number("2022/10/12/00002")
+            .seller(secondCompany)
+            .buyer(firstCompany)
+            .invoiceEntries(List.of(secondEntry))
+            .build()
 
-    static Invoice firstInvoice = new Invoice(LocalDate.of(2022, 10, 1), firstCompany, secondCompany, List.of(firstEntry))
+    static Invoice thirdInvoice = Invoice.builder()
+            .date(LocalDate.of(2022, 10, 1))
+            .number("2022/10/12/00003")
+            .seller(firstCompany)
+            .buyer(secondCompany)
+            .invoiceEntries(List.of(firstEntry, secondEntry))
+            .build()
 
-    static Invoice secondInvoice = new Invoice(LocalDate.of(2022, 10, 1), secondCompany, firstCompany, List.of(secondEntry))
+    static Invoice fourthInvoice = Invoice.builder()
+            .date(LocalDate.of(2022, 10, 1))
+            .number("2022/10/12/00004")
+            .seller(secondCompany)
+            .buyer(firstCompany)
+            .invoiceEntries(List.of(thirdEntry))
+            .build()
 
-    static Invoice thirdInvoice = new Invoice(LocalDate.of(2022, 10, 1), firstCompany, secondCompany, List.of(firstEntry, secondEntry))
-
-    static Invoice fourthInvoice = new Invoice(LocalDate.of(2022, 10, 1), secondCompany, firstCompany, List.of(thirdEntry))
-
-    static Invoice fifthInvoice = new Invoice(LocalDate.of(2022, 10, 1), secondCompany, firstCompany, List.of(fifthEntry))
+    static Invoice fifthInvoice = Invoice.builder()
+            .date(LocalDate.of(2022, 10, 1))
+            .number("2022/10/12/00005")
+            .seller(secondCompany)
+            .buyer(firstCompany)
+            .invoiceEntries(List.of(fifthEntry))
+            .build()
 
 }

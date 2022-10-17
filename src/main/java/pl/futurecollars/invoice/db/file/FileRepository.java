@@ -59,6 +59,7 @@ public class FileRepository implements Database {
       invoice.setSeller(updatedInvoice.getSeller());
       invoice.setBuyer(updatedInvoice.getBuyer());
       invoice.setInvoiceEntries(updatedInvoice.getInvoiceEntries());
+      invoice.setNumber(updatedInvoice.getNumber());
 
       allInvoices.add(jsonService.toJson(invoice));
       filesService.writeLinesToFile(databasePath, allInvoices);
