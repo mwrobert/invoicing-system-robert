@@ -13,4 +13,13 @@
       <option name="Make" enabled="true" />
     </method>
   </configuration>
+  <configuration default="false" name="InvoiceApplication-dev" type="Application" factoryName="Application">
+    <option name="ALTERNATIVE_JRE_PATH" value="14" />
+    <option name="MAIN_CLASS_NAME" value="pl.futurecollars.invoice.InvoiceApplication" />
+    <module name="invoicing-system-joanna-biegala.main" />
+    <option name="PROGRAM_PARAMETERS" value="--spring.profiles.active=memory" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
 </component>

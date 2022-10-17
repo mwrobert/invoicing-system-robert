@@ -24,8 +24,7 @@ class SqlDatabaseIntegrationTest extends AbstractDatabaseTest {
         flyway.migrate()
 
         def database = new SqlDatabase(jdbcTemplate)
-        database.initVatRatesMap()
-
         database
+
     }
 }

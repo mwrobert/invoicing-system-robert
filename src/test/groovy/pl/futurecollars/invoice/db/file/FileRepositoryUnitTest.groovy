@@ -80,7 +80,7 @@ class FileRepositoryUnitTest extends Specification {
         database.delete(1)
         then:
         def exception = thrown(RuntimeException)
-        exception.message == "Failed to delete invoice with id: 1"
+        exception.message == "Database failed to get invoice with id: 1"
     }
 
 }

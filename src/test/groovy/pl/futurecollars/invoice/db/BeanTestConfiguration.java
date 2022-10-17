@@ -20,4 +20,10 @@ public class BeanTestConfiguration {
     return new JsonService();
   }
 
+  @Bean
+  @ConditionalOnProperty(value = "database.type", havingValue = "jpa")
+  public JsonService jsonJpaService() {
+    return new JsonService();
+  }
+
 }

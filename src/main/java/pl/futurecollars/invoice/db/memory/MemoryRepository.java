@@ -27,18 +27,21 @@ public class MemoryRepository implements Database {
   }
 
   @Override
-  public void update(long id, Invoice invoice) {
+  public Optional<Invoice> update(long id, Invoice invoice) {
     Optional<Invoice> saved = findById(id);
     if (saved.isEmpty()) {
       throw new IllegalArgumentException("Id " + id + " does not exist");
     }
     invoice.setId(id);
     invoices.put(id, invoice);
+    return Optional.of(invoice);
   }
 
   @Override
-  public void delete(long id) {
+  public Optional<Invoice> delete(long id) {
+    Optional<Invoice> invoiceOptional = findById(id);
     invoices.remove(id);
+    return invoiceOptional;
   }
 
   @Override

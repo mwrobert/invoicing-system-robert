@@ -12,30 +12,32 @@ class TestHelpers {
 
     static company(long id) {
         Company.builder()
-            .name(("iCode Trust $id Sp. z o.o"))
-            .taxIdentificationNumber(("$id").repeat(10))
-            .address("ul. Nowa 24d/$id 02-703 Warszawa, Polska")
-            .healthInsurance(BigDecimal.valueOf(500).setScale(2))
-            .pensionInsurance(BigDecimal.valueOf(1400).setScale(2))
-            .build()
+                .name(("iCode Trust $id Sp. z o.o"))
+                .taxIdentificationNumber(("$id").repeat(10))
+                .address("ul. Nowa 24d/$id 02-703 Warszawa, Polska")
+                .healthInsurance(BigDecimal.valueOf(500).setScale(2))
+                .pensionInsurance(BigDecimal.valueOf(1400).setScale(2))
+                .build()
     }
 
     static product(long id) {
-        new InvoiceEntry("Programming course $id",
-                BigDecimal.valueOf(1).setScale(2),
-                BigDecimal.valueOf(id * 1000).setScale(2),
-                BigDecimal.valueOf(id * 1000 * 0.08).setScale(2),
-                Vat.Vat_8, null)
+        InvoiceEntry.builder()
+                .description("Programming course $id")
+                .quantity(BigDecimal.valueOf(1).setScale(2))
+                .netPrice(BigDecimal.valueOf(id * 1000).setScale(2))
+                .vatValue(BigDecimal.valueOf(id * 1000 * 0.08).setScale(2))
+                .vatRate(Vat.Vat_8)
+                .build()
     }
 
     static invoice(long id) {
         Invoice.builder()
-            .date(LocalDate.now())
-            .number("2022/10/12/0000$id")
-            .seller(company(id))
-            .buyer(company(id + 1))
-            .invoiceEntries(List.of(product(id)))
-            .build()
+                .date(LocalDate.now())
+                .number("2022/10/12/0000$id")
+                .seller(company(id))
+                .buyer(company(id + 1))
+                .invoiceEntries(List.of(product(id)))
+                .build()
     }
 
     static Company firstCompany = Company.builder()
@@ -54,17 +56,49 @@ class TestHelpers {
             .pensionInsurance(BigDecimal.valueOf(1400).setScale(2))
             .build()
 
-    static Car firstCar = new Car("AAA 12 34", true)
+    static Car firstCar = Car.builder()
+            .registrationNumber("AAA 12 34")
+            .personalUse(true)
+            .build()
 
-    static Car secondCar = new Car("BBB 12 34", false)
+    static Car secondCar = Car.builder()
+            .registrationNumber("BBB 12 34")
+            .personalUse(false)
+            .build()
 
-    static InvoiceEntry firstEntry = new InvoiceEntry("First product", BigDecimal.valueOf(1).setScale(2), BigDecimal.valueOf(10000).setScale(2), BigDecimal.valueOf(10000 * 0.23).setScale(2), Vat.Vat_23, null)
+    static InvoiceEntry firstEntry = InvoiceEntry.builder()
+            .description("First product")
+            .quantity(BigDecimal.valueOf(1).setScale(2))
+            .netPrice(BigDecimal.valueOf(10000).setScale(2))
+            .vatValue(BigDecimal.valueOf(10000 * 0.23).setScale(2))
+            .vatRate(Vat.Vat_23)
+            .build()
 
-    static InvoiceEntry secondEntry = new InvoiceEntry("Second product", BigDecimal.valueOf(10).setScale(2), BigDecimal.valueOf(5000).setScale(2), BigDecimal.valueOf(5000 * 0.05).setScale(2), Vat.Vat_5, null)
+    static InvoiceEntry secondEntry = InvoiceEntry.builder()
+            .description("Second product")
+            .quantity(BigDecimal.valueOf(10).setScale(2))
+            .netPrice(BigDecimal.valueOf(5000).setScale(2))
+            .vatValue(BigDecimal.valueOf(5000 * 0.05).setScale(2))
+            .vatRate(Vat.Vat_5)
+            .build()
 
-    static InvoiceEntry thirdEntry = new InvoiceEntry("Third product", BigDecimal.valueOf(1).setScale(2), BigDecimal.valueOf(10000).setScale(2), BigDecimal.valueOf(10000 * 0.23).setScale(2), Vat.Vat_23, firstCar)
+    static InvoiceEntry thirdEntry = InvoiceEntry.builder()
+            .description("Third product")
+            .quantity(BigDecimal.valueOf(1).setScale(2))
+            .netPrice(BigDecimal.valueOf(10000).setScale(2))
+            .vatValue(BigDecimal.valueOf(10000 * 0.23).setScale(2))
+            .vatRate(Vat.Vat_23)
+            .expenseRelatedToCar(firstCar)
+            .build()
 
-    static InvoiceEntry fifthEntry = new InvoiceEntry("Third product", BigDecimal.valueOf(1).setScale(2), BigDecimal.valueOf(10000).setScale(2), BigDecimal.valueOf(10000 * 0.23).setScale(2), Vat.Vat_23, secondCar)
+    static InvoiceEntry fourthEntry = InvoiceEntry.builder()
+            .description("Fourth product")
+            .quantity(BigDecimal.valueOf(1).setScale(2))
+            .netPrice(BigDecimal.valueOf(10000).setScale(2))
+            .vatValue(BigDecimal.valueOf(10000 * 0.23).setScale(2))
+            .vatRate(Vat.Vat_23)
+            .expenseRelatedToCar(secondCar)
+            .build()
 
     static Invoice firstInvoice = Invoice.builder()
             .date(LocalDate.of(2022, 10, 1))
@@ -103,7 +137,7 @@ class TestHelpers {
             .number("2022/10/12/00005")
             .seller(secondCompany)
             .buyer(firstCompany)
-            .invoiceEntries(List.of(fifthEntry))
+            .invoiceEntries(List.of(fourthEntry))
             .build()
 
 }

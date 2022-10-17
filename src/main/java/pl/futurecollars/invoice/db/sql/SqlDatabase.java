@@ -2,12 +2,10 @@ package pl.futurecollars.invoice.db.sql;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -19,6 +17,7 @@ import pl.futurecollars.invoice.model.Invoice;
 import pl.futurecollars.invoice.model.InvoiceEntry;
 import pl.futurecollars.invoice.model.Vat;
 
+@AllArgsConstructor
 public class SqlDatabase implements Database {
 
   private static final String SELECT_INVOICES_QUERY = "select i.id, i.date, i.number, "
@@ -30,24 +29,11 @@ public class SqlDatabase implements Database {
       + "inner join companies c1 on i.seller = c1.id "
       + "inner join companies c2 on i.buyer = c2.id";
 
-  private final JdbcTemplate jdbcTemplate;
-  private final Map<Vat, Integer> vatToId = new HashMap<>();
-  private final Map<Integer, Vat> idToVat = new HashMap<>();
-  private final GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+  private JdbcTemplate jdbcTemplate;
+  private GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
   public SqlDatabase(JdbcTemplate jdbcTemplate) {
     this.jdbcTemplate = jdbcTemplate;
-  }
-
-  @PostConstruct
-  void initVatRatesMap() {
-    jdbcTemplate.query("select * from vat",
-        rs -> {
-          Vat vat = Vat.valueOf("Vat_" + rs.getString("name"));
-          int id = rs.getInt("id");
-          vatToId.put(vat, id);
-          idToVat.put(id, vat);
-        });
   }
 
   @Override
@@ -72,7 +58,7 @@ public class SqlDatabase implements Database {
       ps.setBigDecimal(2, entry.getQuantity());
       ps.setBigDecimal(3, entry.getNetPrice());
       ps.setBigDecimal(4, entry.getVatValue());
-      ps.setInt(5, vatToId.get(entry.getVatRate()));
+      ps.setString(5, entry.getVatRate().name());
       ps.setObject(6, insertCarAndGetItId(entry.getExpenseRelatedToCar()));
       return ps;
     }, keyHolder);
@@ -141,7 +127,7 @@ public class SqlDatabase implements Database {
 
   @Override
   @Transactional
-  public void update(long id, Invoice updatedInvoice) {
+  public Optional<Invoice> update(long id, Invoice updatedInvoice) {
     Optional<Invoice> originalInvoice = findById(id);
     if (originalInvoice.isPresent()) {
       updateInvoiceData(updatedInvoice, id);
@@ -150,9 +136,8 @@ public class SqlDatabase implements Database {
       deleteCarsRelatedToInvoice(id);
       deleteEntriesRelatedToInvoice(id);
       addEntriesRelatedToInvoice(id, updatedInvoice);
-    } else {
-      throw new RuntimeException("Failed to update invoice with id: " + id);
     }
+    return originalInvoice;
   }
 
   private void updateInvoiceData(Invoice updatedInvoice, long originalInvoiceId) {
@@ -200,7 +185,7 @@ public class SqlDatabase implements Database {
 
   @Override
   @Transactional
-  public void delete(long id) {
+  public Optional<Invoice> delete(long id) {
     Optional<Invoice> invoiceOptional = findById(id);
     if (invoiceOptional.isPresent()) {
       deleteCarsRelatedToInvoice(id);
@@ -208,6 +193,7 @@ public class SqlDatabase implements Database {
       deleteInvoice(id);
       deleteCompaniesRelatedToInvoice(invoiceOptional.get());
     }
+    return invoiceOptional;
   }
 
   private void deleteCarsRelatedToInvoice(long id) {
@@ -267,7 +253,7 @@ public class SqlDatabase implements Database {
               .quantity(response.getBigDecimal("quantity"))
               .netPrice(response.getBigDecimal("net_price"))
               .vatValue(response.getBigDecimal("vat_value"))
-              .vatRate(idToVat.get(response.getInt("vat_rate")))
+              .vatRate(Vat.valueOf(response.getString("vat_rate")))
               .expenseRelatedToCar(response.getObject("registration_number") != null
                   ? Car.builder()
                   .registrationNumber(response.getString("registration_number"))

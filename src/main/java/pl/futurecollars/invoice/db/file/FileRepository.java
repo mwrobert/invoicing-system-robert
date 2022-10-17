@@ -46,7 +46,7 @@ public class FileRepository implements Database {
   }
 
   @Override
-  public void update(long id, Invoice updatedInvoice) {
+  public Optional<Invoice> update(long id, Invoice updatedInvoice) {
     try {
       List<String> allInvoices = filesService.readAllLines(databasePath);
       final String invoiceAsJson = allInvoices.stream().filter(line -> containsId(line, id)).findFirst()
@@ -63,13 +63,15 @@ public class FileRepository implements Database {
 
       allInvoices.add(jsonService.toJson(invoice));
       filesService.writeLinesToFile(databasePath, allInvoices);
+      return Optional.of(invoice);
     } catch (IOException ex) {
       throw new RuntimeException("Failed to update invoice with id: " + id);
     }
   }
 
   @Override
-  public void delete(long id) {
+  public Optional<Invoice> delete(long id) {
+    Optional<Invoice> invoiceOptional = findById(id);
     try {
       var invoicesExceptDeleted = filesService.readAllLines(databasePath)
           .stream()
@@ -80,6 +82,7 @@ public class FileRepository implements Database {
     } catch (IOException ex) {
       throw new RuntimeException("Failed to delete invoice with id: " + id, ex);
     }
+    return invoiceOptional;
   }
 
   private boolean containsId(String line, long id) {
