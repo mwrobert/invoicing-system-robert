@@ -5,18 +5,19 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.IfProfileValue
 import pl.futurecollars.invoice.db.AbstractDatabaseTest
 import pl.futurecollars.invoice.db.Database
+import pl.futurecollars.invoice.model.Invoice
 
 @SpringBootTest
 @IfProfileValue(name = "spring.profiles.active", value = "mongo")
 class MongoDatabaseIntegrationTest extends AbstractDatabaseTest {
 
     @Autowired
-    private MongoBasedDatabase mongoBasedDatabase
+    private Database<Invoice> mongoBasedInvoiceDatabase
 
     @Override
     Database getDatabaseInstance() {
-        assert mongoBasedDatabase != null
-        mongoBasedDatabase
+        assert mongoBasedInvoiceDatabase != null
+        mongoBasedInvoiceDatabase
     }
 
 }

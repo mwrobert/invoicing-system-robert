@@ -3,8 +3,8 @@ package pl.futurecollars.invoice.controller.tax;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 import pl.futurecollars.invoice.model.Company;
-import pl.futurecollars.invoice.service.TaxCalculatorResult;
-import pl.futurecollars.invoice.service.TaxCalculatorService;
+import pl.futurecollars.invoice.service.tax.TaxCalculatorResult;
+import pl.futurecollars.invoice.service.tax.TaxCalculatorService;
 
 @RestController
 @AllArgsConstructor

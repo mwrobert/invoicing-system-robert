@@ -42,7 +42,7 @@ abstract class AbstractDatabaseTest extends Specification {
         then:
         ids.forEach {
             def expectedInvoice = resetIds(invoices.get((int) (it - ids[0]))).toString()
-            def invoiceFromDb = resetIds(database.findById(it).get()).toString()
+            def invoiceFromDb = resetIds((Invoice) (database.findById(it).get())).toString()
             assert invoiceFromDb == expectedInvoice
         }
     }
@@ -58,7 +58,7 @@ abstract class AbstractDatabaseTest extends Specification {
     def "the database should be empty when all invoices are deleted"() {
         given:
         deleteAllInvoices()
-        invoices.forEach({it.id = database.save(it) })
+        invoices.forEach({ it.id = database.save(it) })
 
         when:
         invoices.forEach({ database.delete(it.getId()) })
@@ -74,7 +74,7 @@ abstract class AbstractDatabaseTest extends Specification {
         when:
         def newInvoice = invoices.get(2)
         def updateOptional = database.update(id, newInvoice)
-        def updatedInvoice = database.findById(id).get()
+        Invoice updatedInvoice = (Invoice) database.findById(id).get()
         newInvoice.setId(id)
         newInvoice.getBuyer().setId(updatedInvoice.getBuyer().getId())
         newInvoice.getSeller().setId(updatedInvoice.getSeller().getId())
@@ -109,5 +109,4 @@ abstract class AbstractDatabaseTest extends Specification {
         invoice.getSeller().id = 0
         return invoice
     }
-
 }

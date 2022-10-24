@@ -1,4 +1,4 @@
-package pl.futurecollars.invoice.service;
+package pl.futurecollars.invoice.service.tax;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -15,7 +15,7 @@ import pl.futurecollars.invoice.model.InvoiceEntry;
 @AllArgsConstructor
 public class TaxCalculatorService {
 
-  private final Database database;
+  private final Database<Invoice> database;
 
   public TaxCalculatorResult getTaxCalculatorResult(Company company) {
 
@@ -58,7 +58,7 @@ public class TaxCalculatorService {
   }
 
   private BigDecimal calculateIncome(String taxIdentificationNumber) {
-    return database.visit(sellerPredicate(taxIdentificationNumber), this::getTotalPrice);
+    return getTaxRelatedData(sellerPredicate(taxIdentificationNumber), this::getTotalPrice);
   }
 
   private BigDecimal getTotalPrice(InvoiceEntry entry) {
@@ -66,7 +66,7 @@ public class TaxCalculatorService {
   }
 
   private BigDecimal calculateCosts(String taxIdentificationNumber) {
-    return database.visit(buyerPredicate(taxIdentificationNumber), calculateTotalCosts());
+    return getTaxRelatedData(buyerPredicate(taxIdentificationNumber), calculateTotalCosts());
   }
 
   private Function<InvoiceEntry, BigDecimal> calculateTotalCosts() {
@@ -84,7 +84,7 @@ public class TaxCalculatorService {
   }
 
   private BigDecimal calculateIncomingVat(String taxIdentificationNumber) {
-    return database.visit(sellerPredicate(taxIdentificationNumber), this::getTotalVat);
+    return getTaxRelatedData(sellerPredicate(taxIdentificationNumber), this::getTotalVat);
   }
 
   private BigDecimal getTotalVat(InvoiceEntry entry) {
@@ -92,7 +92,7 @@ public class TaxCalculatorService {
   }
 
   private BigDecimal calculateOutgoingVat(String taxIdentificationNumber) {
-    return database.visit(buyerPredicate(taxIdentificationNumber), vatEntryToAmount());
+    return getTaxRelatedData(buyerPredicate(taxIdentificationNumber), vatEntryToAmount());
   }
 
   private Function<InvoiceEntry, BigDecimal> vatEntryToAmount() {
@@ -115,6 +115,15 @@ public class TaxCalculatorService {
 
   private Predicate<Invoice> buyerPredicate(String taxIdentificationNumber) {
     return invoice -> invoice.getBuyer().getTaxIdentificationNumber().equals(taxIdentificationNumber);
+  }
+
+  private BigDecimal getTaxRelatedData(Predicate<Invoice> invoicePredicate, Function<InvoiceEntry, BigDecimal> invoiceEntryToAmount) {
+    return database.getAll()
+        .stream()
+        .filter(invoicePredicate)
+        .flatMap(invoice -> invoice.getInvoiceEntries().stream())
+        .map(invoiceEntryToAmount)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
 }

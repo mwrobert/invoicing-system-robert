@@ -75,7 +75,7 @@ class IdServiceTest extends Specification {
     def "should throw exception when initializing Id file fails"() {
         given:
         filesService.createFile("test_db/nextId.txt") >> idPath
-        filesService.writeToFile(idPath,"1") >> {throw new IOException()}
+        filesService.writeToFile(idPath, "1") >> { throw new IOException() }
 
         when:
         new IdService(idPath, filesService).getCurrentIdAndIncrement()
@@ -92,8 +92,6 @@ class IdServiceTest extends Specification {
 
     def deleteTestFile(Path path) {
         Files.deleteIfExists(path)
-        Files.deleteIfExists(path.getParent())
-
     }
 
     def cleanup() {

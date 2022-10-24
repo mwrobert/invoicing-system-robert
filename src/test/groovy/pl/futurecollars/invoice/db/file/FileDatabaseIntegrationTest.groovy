@@ -2,6 +2,7 @@ package pl.futurecollars.invoice.db.file
 
 import pl.futurecollars.invoice.db.AbstractDatabaseTest
 import pl.futurecollars.invoice.db.Database
+import pl.futurecollars.invoice.model.Invoice
 import pl.futurecollars.invoice.utils.FilesService
 import pl.futurecollars.invoice.utils.IdService
 import pl.futurecollars.invoice.utils.JsonService
@@ -11,18 +12,18 @@ import java.nio.file.Path
 
 import static pl.futurecollars.invoice.TestHelpers.invoice
 
-class FileRepositoryIntegrationTest extends AbstractDatabaseTest {
+class FileDatabaseIntegrationTest extends AbstractDatabaseTest {
 
     Path databasePath
 
     @Override
     Database getDatabaseInstance() {
         def filesService = new FilesService()
-        def idPath = File.createTempFile("nextId",".txt").toPath()
+        def idPath = File.createTempFile("nextId", ".txt").toPath()
         def idService = new IdService(idPath, filesService)
         def jsonService = new JsonService()
-        databasePath = File.createTempFile("testInvoices",".json").toPath()
-        new FileRepository(databasePath,filesService,jsonService,idService)
+        databasePath = File.createTempFile("testInvoices", ".json").toPath()
+        new FileDatabase<>(databasePath, filesService, jsonService, idService, Invoice.class)
     }
 
     def "should file based database writes invoices to correct file"() {

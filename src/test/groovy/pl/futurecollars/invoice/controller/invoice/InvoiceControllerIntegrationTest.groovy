@@ -1,66 +1,56 @@
-package pl.futurecollars.invoice.controller
+package pl.futurecollars.invoice.controller.invoice
 
 import com.mongodb.client.MongoDatabase
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.ApplicationContext
 import org.springframework.http.MediaType
-import org.springframework.test.annotation.IfProfileValue
-import pl.futurecollars.invoice.db.nosql.MongoBasedDatabase
+import pl.futurecollars.invoice.controller.AbstractControllerTest
+import pl.futurecollars.invoice.model.Invoice
 import spock.lang.Requires
-import spock.lang.Stepwise
-import spock.lang.Unroll
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import static pl.futurecollars.invoice.TestHelpers.firstInvoice
-import static pl.futurecollars.invoice.TestHelpers.invoice
-import static pl.futurecollars.invoice.TestHelpers.secondInvoice
-import static pl.futurecollars.invoice.TestHelpers.thirdInvoice
+import static pl.futurecollars.invoice.TestHelpers.*
 
-@AutoConfigureMockMvc
-@SpringBootTest
-@Unroll
-@Stepwise
 class InvoiceControllerIntegrationTest extends AbstractControllerTest {
 
     @Autowired
     private ApplicationContext context
 
-    @Requires({ System.getProperty('spring.profiles.active', '').contains('mongo')})
+    @Requires({ System.getProperty('spring.profiles.active', '').contains('mongo') })
     def "database is dropped to ensure clean state"() {
         expect:
         MongoDatabase mongoDatabase = context.getBean(MongoDatabase)
         mongoDatabase.drop()
     }
 
-    def "should return empty array when database is empty"() {
+    def "should return empty array when invoice database is empty"() {
+        given:
+        getAllInvoices().each { invoice -> deleteInvoice(invoice.id) }
         expect:
         getAllInvoices() == []
-    }
-
-    def "should add invoice and return sequential id"() {
-        expect:
-        def id = addInvoice(firstInvoice)
-        addInvoice(firstInvoice) == id + 1
-        addInvoice(firstInvoice) == id + 2
-        addInvoice(firstInvoice) == id + 3
-        addInvoice(firstInvoice) == id + 4
     }
 
     def "should return all invoices"() {
         given:
         def numberOfInvoices = 3
-        addInvoice(firstInvoice)
-        addInvoice(secondInvoice)
-        addInvoice(thirdInvoice)
+        def expectedInvoices = addUniqueInvoices(numberOfInvoices)
 
         when:
         def invoices = getAllInvoices()
 
         then:
         invoices.size() == numberOfInvoices
+        resetIds(invoices) == resetIds(expectedInvoices)
+    }
+
+    def "should add invoice and return sequential id"() {
+        expect:
+        def id = addInvoiceAndReturnId(firstInvoice)
+        addInvoiceAndReturnId(firstInvoice) == id + 1
+        addInvoiceAndReturnId(firstInvoice) == id + 2
+        addInvoiceAndReturnId(firstInvoice) == id + 3
+        addInvoiceAndReturnId(firstInvoice) == id + 4
     }
 
     def "should return correct invoice when getting by id"() {
@@ -69,10 +59,12 @@ class InvoiceControllerIntegrationTest extends AbstractControllerTest {
         def verifiedInvoice = expectedInvoices.get(2)
 
         when:
-        def invoice = getInvoiceById(verifiedInvoice.getId())
+        Invoice invoice = getById(verifiedInvoice.getId(), Invoice, INVOICES_ENDPOINT)
+        verifiedInvoice.seller.setId(invoice.seller.getId())
+        verifiedInvoice.buyer.setId(invoice.buyer.getId())
 
         then:
-        invoice == verifiedInvoice
+        resetIds(invoice) == resetIds(verifiedInvoice)
     }
 
     def "should get status 404 when invoice id is not found when getting invoice by id"() {
@@ -81,7 +73,7 @@ class InvoiceControllerIntegrationTest extends AbstractControllerTest {
 
         expect:
         mockMvc.perform(
-                get("$INVOICES_ENDPOINT$id")
+                get("$INVOICES_ENDPOINT/$id")
         )
                 .andExpect(status().isNotFound())
 
@@ -95,13 +87,13 @@ class InvoiceControllerIntegrationTest extends AbstractControllerTest {
 
         expect:
         mockMvc.perform(
-                delete("$INVOICES_ENDPOINT$id")
+                delete("$INVOICES_ENDPOINT/$id")
         )
                 .andExpect(status().isNotFound())
 
 
         where:
-        id << [-100, -2, -1, 0, 12, 13, 99, 102, 1000]
+        id << [-100, -2, -1, 0, 1000]
     }
 
     def "should get status 404 when invoice id is not found when updating invoice by id"() {
@@ -110,37 +102,41 @@ class InvoiceControllerIntegrationTest extends AbstractControllerTest {
 
         expect:
         mockMvc.perform(
-                put("$INVOICES_ENDPOINT$id")
-                        .content(getInvoiceAsJson(invoice(1)))
+                put("$INVOICES_ENDPOINT/$id")
+                        .content(getAsJson(invoice(1)))
                         .contentType(MediaType.APPLICATION_JSON)
         )
                 .andExpect(status().isNotFound())
 
 
         where:
-        id << [-100, -2, -1, 0, 12, 13, 99, 102, 1000]
+        id << [-100, -2, -1, 0, 1000]
     }
 
     def "should update invoice by id"() {
         given:
-        def id = addInvoice(firstInvoice)
+        def id = addInvoiceAndReturnId(firstInvoice)
         def updatedInvoice = secondInvoice
+        updatedInvoice.id = id
         when:
         mockMvc.perform(
-                put("$INVOICES_ENDPOINT$id")
-                        .content(getInvoiceAsJson(updatedInvoice))
+                put("$INVOICES_ENDPOINT/$id")
+                        .content(getAsJson(updatedInvoice))
                         .contentType(MediaType.APPLICATION_JSON)
         )
                 .andExpect(status().isOk())
 
         then:
-        secondInvoice.setId(id)
-        getInvoiceById(id) == secondInvoice
+        def invoiceFromDbAfterUpdate = resetIds(getInvoiceById(id)).toString()
+        def expectedInvoice = resetIds(updatedInvoice).toString()
+        invoiceFromDbAfterUpdate == expectedInvoice
 
     }
 
     def "should delete invoice by id"() {
         given:
+        getAllInvoices().each { invoice -> deleteInvoice(invoice.id) }
+
         def invoices = addUniqueInvoices(69)
 
         expect:

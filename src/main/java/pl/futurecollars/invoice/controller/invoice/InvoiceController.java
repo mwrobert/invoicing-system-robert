@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import pl.futurecollars.invoice.model.Invoice;
-import pl.futurecollars.invoice.service.InvoiceService;
+import pl.futurecollars.invoice.service.invoice.InvoiceService;
 
 @RestController
 public class InvoiceController implements InvoiceApi {
@@ -19,12 +19,12 @@ public class InvoiceController implements InvoiceApi {
 
   @Override
   public ResponseEntity<Invoice> getInvoice(@PathVariable long id) {
-    return ResponseEntity.of(invoiceService.findForId(id));
+    return ResponseEntity.of(invoiceService.findInvoiceById(id));
   }
 
   @Override
   public List<Invoice> getAll() {
-    return invoiceService.getAll();
+    return invoiceService.getAllInvoices();
   }
 
   @Override

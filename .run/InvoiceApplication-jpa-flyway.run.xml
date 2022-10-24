@@ -1,7 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="InvoiceApplication-jpa-flyway" type="Application" factoryName="Application">
     <option name="ALTERNATIVE_JRE_PATH" value="14" />
-    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="pl.futurecollars.invoice.InvoiceApplication" />
     <module name="invoicing-system-joanna-biegala.main" />
     <option name="PROGRAM_PARAMETERS" value="--spring.profiles.active=jpa-flyway" />

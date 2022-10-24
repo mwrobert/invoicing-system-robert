@@ -1,4 +1,4 @@
-package pl.futurecollars.invoice.service;
+package pl.futurecollars.invoice.service.tax;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.math.BigDecimal;

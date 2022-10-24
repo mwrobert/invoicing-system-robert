@@ -12,7 +12,7 @@ import java.nio.file.Path
 
 import static pl.futurecollars.invoice.TestHelpers.invoice
 
-class FileRepositoryUnitTest extends Specification {
+class FileDatabaseUnitTest extends Specification {
 
     private final databasePath = Path.of("test_db/invoices.json")
     private final FilesService filesServiceMock = Mock(FilesService)
@@ -22,7 +22,7 @@ class FileRepositoryUnitTest extends Specification {
     private Database database
 
     def setup() {
-        database = new FileRepository(databasePath, filesServiceMock, jsonServiceMock, idService)
+        database = new FileDatabase(databasePath, filesServiceMock, jsonServiceMock, idService, Invoice.class)
     }
 
     def "should throw exception when appendLineToFile() in save() fails"() {
@@ -32,7 +32,7 @@ class FileRepositoryUnitTest extends Specification {
         database.save(invoice(1L))
         then:
         def exception = thrown(RuntimeException)
-        exception.getMessage().equalsIgnoreCase("Problem save invoice to database repository")
+        exception.getMessage().equalsIgnoreCase("Problem save item to database repository")
     }
 
     def "should throw exception when readAllLines() in update() fails"() {
@@ -47,7 +47,7 @@ class FileRepositoryUnitTest extends Specification {
         database.update(1L, TestHelpers.invoice(3))
         then:
         def exception = thrown(RuntimeException)
-        exception.getMessage().equalsIgnoreCase("Failed to update invoice with id: 1")
+        exception.getMessage().equalsIgnoreCase("Failed to update item with id: 1")
     }
 
     def "should throw exception when readAllLine() in findById fails"() {
@@ -58,7 +58,7 @@ class FileRepositoryUnitTest extends Specification {
         database.findById(1L)
         then:
         def exception = thrown(RuntimeException)
-        exception.message == "Database failed to get invoice with id: 1"
+        exception.message == "Database failed to get item with id: 1"
     }
 
     def "should throw exception when readAllLine() in getAll() fails"() {
@@ -69,7 +69,7 @@ class FileRepositoryUnitTest extends Specification {
         database.getAll()
         then:
         def exception = thrown(RuntimeException)
-        exception.message == "Failed to load all invoices"
+        exception.message == "Failed to load all items"
     }
 
     def "should throw exception when delete() fails"() {
@@ -80,7 +80,7 @@ class FileRepositoryUnitTest extends Specification {
         database.delete(1)
         then:
         def exception = thrown(RuntimeException)
-        exception.message == "Database failed to get invoice with id: 1"
+        exception.message == "Database failed to get item with id: 1"
     }
 
 }

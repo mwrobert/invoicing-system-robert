@@ -1,14 +1,15 @@
 package pl.futurecollars.invoice
 
-import pl.futurecollars.invoice.model.Car
-import pl.futurecollars.invoice.model.Company
-import pl.futurecollars.invoice.model.Invoice
-import pl.futurecollars.invoice.model.InvoiceEntry
-import pl.futurecollars.invoice.model.Vat
+import pl.futurecollars.invoice.model.*
 
 import java.time.LocalDate
+import java.util.function.Supplier
 
 class TestHelpers {
+
+    static final String INVOICES_ENDPOINT = "/invoices"
+    static final String COMPANIES_ENDPOINT = "/companies"
+    static final String TAX_ENDPOINT = "/tax"
 
     static company(long id) {
         Company.builder()
@@ -40,7 +41,7 @@ class TestHelpers {
                 .build()
     }
 
-    static Company firstCompany = Company.builder()
+    static Supplier<Company> firstCompany = () -> Company.builder()
             .name("First")
             .taxIdentificationNumber("1111111111")
             .address("ul. Pierwsza 1, Warszawa, Polska")
@@ -48,7 +49,7 @@ class TestHelpers {
             .pensionInsurance(BigDecimal.valueOf(1400).setScale(2))
             .build()
 
-    static Company secondCompany = Company.builder()
+    static Supplier<Company> secondCompany = () -> Company.builder()
             .name("Second")
             .taxIdentificationNumber("2222222222")
             .address("ul. Druga 2, Warszawa, Polska")
@@ -103,41 +104,55 @@ class TestHelpers {
     static Invoice firstInvoice = Invoice.builder()
             .date(LocalDate.of(2022, 10, 1))
             .number("2022/10/12/00001")
-            .seller(firstCompany)
-            .buyer(secondCompany)
+            .seller(firstCompany.get())
+            .buyer(secondCompany.get())
             .invoiceEntries(List.of(firstEntry))
             .build()
 
     static Invoice secondInvoice = Invoice.builder()
             .date(LocalDate.of(2022, 10, 1))
             .number("2022/10/12/00002")
-            .seller(secondCompany)
-            .buyer(firstCompany)
+            .seller(secondCompany.get())
+            .buyer(firstCompany.get())
             .invoiceEntries(List.of(secondEntry))
             .build()
 
     static Invoice thirdInvoice = Invoice.builder()
             .date(LocalDate.of(2022, 10, 1))
             .number("2022/10/12/00003")
-            .seller(firstCompany)
-            .buyer(secondCompany)
+            .seller(firstCompany.get())
+            .buyer(secondCompany.get())
             .invoiceEntries(List.of(firstEntry, secondEntry))
             .build()
 
     static Invoice fourthInvoice = Invoice.builder()
             .date(LocalDate.of(2022, 10, 1))
             .number("2022/10/12/00004")
-            .seller(secondCompany)
-            .buyer(firstCompany)
+            .seller(secondCompany.get())
+            .buyer(firstCompany.get())
             .invoiceEntries(List.of(thirdEntry))
             .build()
 
     static Invoice fifthInvoice = Invoice.builder()
             .date(LocalDate.of(2022, 10, 1))
             .number("2022/10/12/00005")
-            .seller(secondCompany)
-            .buyer(firstCompany)
+            .seller(secondCompany.get())
+            .buyer(firstCompany.get())
             .invoiceEntries(List.of(fourthEntry))
             .build()
+
+    static Invoice resetIds(Invoice invoice) {
+        invoice.getBuyer().id = null
+        invoice.getSeller().id = null
+        invoice.invoiceEntries.forEach {
+            it.id = null
+            it.expenseRelatedToCar?.id = null
+        }
+        invoice
+    }
+
+    static List<Invoice> resetIds(List<Invoice> invoices) {
+        invoices.forEach { invoice -> resetIds(invoice) }
+    }
 
 }
