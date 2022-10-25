@@ -1,0 +1,64 @@
+<legend class="text-center text-light font-weight-bold h1"><i class="bi bi-cash-coin"></i> INVOICING
+  APP <i class="bi bi-calculator-fill"></i></legend>
+<table id="companies table" class="table table-hover table-dark">
+  <tr class="table-active">
+    <th class="text-center">TAX IDENTIFICATION NUMBER</th>
+    <th class="text-center">ADDRESS</th>
+    <th class="text-center">NAME</th>
+    <th class="text-center">PENSION INSURANCE</th>
+    <th class="text-center">HEALTH INSURANCE</th>
+    <th></th>
+  </tr>
+  <tr class="table-active">
+    <td><input [(ngModel)]="newCompany.taxIdentificationNumber" type="text" class="form-control"
+               name="taxIdentificationNumber"></td>
+    <td><input [(ngModel)]="newCompany.address" type="text" class="form-control" name="address"></td>
+    <td><input [(ngModel)]="newCompany.name" type="text" class="form-control" name="name"></td>
+    <td><input [(ngModel)]="newCompany.pensionInsurance" class="form-control" type="number" name="pensionInsurance">
+    </td>
+    <td><input [(ngModel)]="newCompany.healthInsurance" class="form-control" type="number" name="healthInsurance"></td>
+    <td>
+      <button (click)="onAddButtonClick()" class="btn btn-success btn-lg btn-block"><i class="bi bi-plus-square"></i>
+        ADD COMPANY
+      </button>
+    </td>
+  </tr>
+  <tbody>
+  <tr *ngFor="let company of companies">
+    <td *ngIf="!company.editMode">{{company.taxIdentificationNumber}}</td>
+    <td *ngIf="company.editMode"><input [(ngModel)]="company.editedCompany.taxIdentificationNumber" type="text"
+                                        class="form-control" name="taxIdentificationNumber"></td>
+    <td *ngIf="!company.editMode">{{company.address}}</td>
+    <td *ngIf="company.editMode"><input [(ngModel)]="company.editedCompany.address" type="text" class="form-control"
+                                        name="address"></td>
+    <td *ngIf="!company.editMode">{{company.name}}</td>
+    <td *ngIf="company.editMode"><input [(ngModel)]="company.editedCompany.name" type="text" class="form-control"
+                                        name="name"></td>
+    <td *ngIf="!company.editMode">{{company.pensionInsurance}}</td>
+    <td *ngIf="company.editMode"><input [(ngModel)]="company.editedCompany.pensionInsurance" type="text"
+                                        class="form-control" name="pensionInsurance"></td>
+    <td *ngIf="!company.editMode">{{company.healthInsurance}}</td>
+    <td *ngIf="company.editMode"><input [(ngModel)]="company.editedCompany.healthInsurance" type="text"
+                                        class="form-control" name="healthInsurance"></td>
+    <td>
+      <div class="btn-group btn-block">
+        <button *ngIf="!company.editMode" (click)="deleteCompany(company)" class="btn btn-danger btn-block"><i
+          class="bi bi-trash3"></i> DELETE
+        </button>
+        <span *ngIf="!company.editMode">&nbsp;</span>
+        <button *ngIf="!company.editMode" (click)="triggerUpdate(company)" class="btn btn-primary btn-block"><i
+          class="bi bi-pencil-square"></i> EDIT
+        </button>
+        <button *ngIf="company.editMode" (click)="updateCompany(company)" class="btn btn-success btn-block"><i
+          class="bi bi-check-square"></i> UPDATE
+        </button>
+        <span *ngIf="company.editMode">&nbsp;</span>
+        <button *ngIf="company.editMode" (click)="cancelCompanyUpdate(company)" class="btn btn-danger btn-block"><i
+          class="bi bi-x-square"></i> CANCEL
+        </button>
+      </div>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
