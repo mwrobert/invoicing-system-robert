@@ -6,7 +6,7 @@ export class CompanyRow {
   }
 
   deleteBtn(): WebElement {
-    return this.companyRow.element(by.css('.btn-danger'))
+    return this.companyRow.element(by.id('deleteBtn'))
   }
 
   async taxIdValue(): Promise<string> {

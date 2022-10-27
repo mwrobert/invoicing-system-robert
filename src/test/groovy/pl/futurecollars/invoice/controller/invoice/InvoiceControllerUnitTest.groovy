@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
@@ -19,8 +20,10 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDate
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import static pl.futurecollars.invoice.TestHelpers.*
 
+@WithMockUser
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 @Stepwise
 @AutoConfigureMockMvc
@@ -38,7 +41,7 @@ class InvoiceControllerUnitTest extends Specification {
 
         expect:
         mockMvc.perform(
-                MockMvcRequestBuilders.get("$INVOICES_ENDPOINT/1")
+                MockMvcRequestBuilders.get("$INVOICES_ENDPOINT/1").with(csrf())
         )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
@@ -58,7 +61,9 @@ class InvoiceControllerUnitTest extends Specification {
         mockMvc.perform(
                 MockMvcRequestBuilders.put("$INVOICES_ENDPOINT/1")
                         .content(expectedInvoiceAsJson)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+        )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andReturn()
@@ -69,7 +74,7 @@ class InvoiceControllerUnitTest extends Specification {
     def "should get status 404 when you try to delete invoice from empty database"() {
         expect:
         mockMvc.perform(
-                MockMvcRequestBuilders.delete("$INVOICES_ENDPOINT/1")
+                MockMvcRequestBuilders.delete("$INVOICES_ENDPOINT/1").with(csrf())
         )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
@@ -81,7 +86,7 @@ class InvoiceControllerUnitTest extends Specification {
     def "should get status 200 when you try to get all invoices from empty database"() {
         expect:
         mockMvc.perform(
-                MockMvcRequestBuilders.get(INVOICES_ENDPOINT)
+                MockMvcRequestBuilders.get(INVOICES_ENDPOINT).with(csrf())
         )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -97,8 +102,10 @@ class InvoiceControllerUnitTest extends Specification {
 
         expect:
         mockMvc.perform(
-                MockMvcRequestBuilders.post(INVOICES_ENDPOINT).content(invoiceAsJson)
+                MockMvcRequestBuilders.post(INVOICES_ENDPOINT)
+                        .content(invoiceAsJson)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
         )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -113,8 +120,10 @@ class InvoiceControllerUnitTest extends Specification {
         def invoiceAsJson = jsonService.toJson(invoice)
 
         def savedInvoiceId = mockMvc.perform(
-                MockMvcRequestBuilders.post(INVOICES_ENDPOINT).content(invoiceAsJson)
+                MockMvcRequestBuilders.post(INVOICES_ENDPOINT)
+                        .content(invoiceAsJson)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
         )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -124,7 +133,7 @@ class InvoiceControllerUnitTest extends Specification {
 
         expect:
         mockMvc.perform(
-                MockMvcRequestBuilders.get("$INVOICES_ENDPOINT/" + savedInvoiceId)
+                MockMvcRequestBuilders.get("$INVOICES_ENDPOINT/" + savedInvoiceId).with(csrf())
         )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -137,7 +146,7 @@ class InvoiceControllerUnitTest extends Specification {
         given:
         def id = mockMvc.perform(
                 MockMvcRequestBuilders
-                        .post("$INVOICES_ENDPOINT/")
+                        .post("$INVOICES_ENDPOINT/").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonService.toJson(firstInvoice)))
                 .andReturn()
@@ -152,9 +161,10 @@ class InvoiceControllerUnitTest extends Specification {
                         .put("$INVOICES_ENDPOINT/$id")
                         .content(jsonService.toJson(invoiceToUpdate))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
         )
 
-        def responseFindById = mockMvc.perform(MockMvcRequestBuilders.get("$INVOICES_ENDPOINT/$id"))
+        def responseFindById = mockMvc.perform(MockMvcRequestBuilders.get("$INVOICES_ENDPOINT/$id").with(csrf()))
         def invoiceFromResponse = jsonService.toObject(responseFindById.andReturn().getResponse().contentAsString, Invoice.class)
 
         invoiceToUpdate.setId(Long.valueOf(id))
@@ -172,8 +182,10 @@ class InvoiceControllerUnitTest extends Specification {
         def invoiceAsJson = jsonService.toJson(invoice)
 
         def savedInvoiceId = mockMvc.perform(
-                MockMvcRequestBuilders.post(INVOICES_ENDPOINT).content(invoiceAsJson)
+                MockMvcRequestBuilders.post(INVOICES_ENDPOINT)
+                        .content(invoiceAsJson)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
         )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -183,7 +195,7 @@ class InvoiceControllerUnitTest extends Specification {
 
         expect:
         mockMvc.perform(
-                MockMvcRequestBuilders.delete("$INVOICES_ENDPOINT/" + savedInvoiceId)
+                MockMvcRequestBuilders.delete("$INVOICES_ENDPOINT/" + savedInvoiceId).with(csrf())
         )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -192,7 +204,7 @@ class InvoiceControllerUnitTest extends Specification {
                 .contentAsString.isEmpty()
         and:
         mockMvc.perform(
-                MockMvcRequestBuilders.get("$INVOICES_ENDPOINT/" + savedInvoiceId)
+                MockMvcRequestBuilders.get("$INVOICES_ENDPOINT/" + savedInvoiceId).with(csrf())
         )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
@@ -203,7 +215,7 @@ class InvoiceControllerUnitTest extends Specification {
 
     private List<Invoice> getAllInvoices() {
         def response = mockMvc.perform(
-                MockMvcRequestBuilders.get(INVOICES_ENDPOINT)
+                MockMvcRequestBuilders.get(INVOICES_ENDPOINT).with(csrf())
         )
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn()
@@ -214,7 +226,7 @@ class InvoiceControllerUnitTest extends Specification {
     }
 
     private ResultActions deleteInvoice(long id) {
-        mockMvc.perform(MockMvcRequestBuilders.delete("$INVOICES_ENDPOINT/$id"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("$INVOICES_ENDPOINT/$id").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
     }
 

@@ -28,7 +28,7 @@ public class Company implements WithId {
   @ApiModelProperty(value = "Company name", required = true, example = "iCode Trust Sp. z o.o")
   private String name;
 
-  @ApiModelProperty(value = "Company tax identification number", required = true, example = "5212205778")
+  @ApiModelProperty(value = "Company tax identification number", required = true, example = "521-220-778")
   private String taxIdentificationNumber;
 
   @ApiModelProperty(value = "Company address", required = true, example = "ul. Nowa 24d/5 02-703 Warszawa, Polska")

@@ -4,6 +4,7 @@ import org.springframework.http.MediaType
 import org.springframework.transaction.annotation.Transactional
 import pl.futurecollars.invoice.controller.AbstractControllerTest
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import static pl.futurecollars.invoice.TestHelpers.COMPANIES_ENDPOINT
@@ -12,12 +13,10 @@ import static pl.futurecollars.invoice.TestHelpers.company
 @Transactional
 class CompanyControllerIntegrationTest extends AbstractControllerTest {
 
-
     def setup() {
         getAllInvoices().each { invoice -> deleteInvoice(invoice.id) }
         getAllCompanies().each { company -> deleteCompany(company.id) }
     }
-
 
     def "empty array is returned when no companies were added"() {
         expect:
@@ -63,7 +62,7 @@ class CompanyControllerIntegrationTest extends AbstractControllerTest {
         addUniqueCompanies(11)
 
         expect:
-        mockMvc.perform(get("$COMPANIES_ENDPOINT/$id"))
+        mockMvc.perform(get("$COMPANIES_ENDPOINT/$id").with(csrf()))
                 .andExpect(status().isNotFound())
 
         where:
@@ -76,7 +75,7 @@ class CompanyControllerIntegrationTest extends AbstractControllerTest {
 
         expect:
         mockMvc.perform(
-                delete("$COMPANIES_ENDPOINT/$id")
+                delete("$COMPANIES_ENDPOINT/$id").with(csrf())
         )
                 .andExpect(status().isNotFound())
 
@@ -93,6 +92,7 @@ class CompanyControllerIntegrationTest extends AbstractControllerTest {
                 put("$COMPANIES_ENDPOINT/$id")
                         .content(getAsJson(company(1)))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
         )
                 .andExpect(status().isNotFound())
 
@@ -111,6 +111,7 @@ class CompanyControllerIntegrationTest extends AbstractControllerTest {
                 put("$COMPANIES_ENDPOINT/$id")
                         .content(jsonService.toJson(updatedCompany))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
         )
                 .andExpect(status().isOk())
 
