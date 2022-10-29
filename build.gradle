@@ -151,5 +151,3 @@ check.dependsOn testWithSqlDatabase
 check.dependsOn testWithJpaDatabase
 check.dependsOn testWithJpaFlywayDatabase
 check.dependsOn testWithMongoDatabase
-
-jar { enabled = false }
