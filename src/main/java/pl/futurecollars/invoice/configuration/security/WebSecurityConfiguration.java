@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
@@ -25,8 +24,10 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     http
         .authorizeRequests()
-        .and()
-        .authorizeRequests().anyRequest().authenticated().and()
+        .antMatchers("/v2/api-docs", "/swagger-resources", "/swagger-ui.html", "/swagger-ui/**", "/swagger*/**")
+        .permitAll()
+        .anyRequest()
+        .authenticated().and()
         .httpBasic()
         .and()
         .addFilterBefore(corsFilter, ChannelProcessingFilter.class);
@@ -37,12 +38,4 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
       http.csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
     }
   }
-
-  @Override
-  public void configure(WebSecurity webSecurity) throws Exception {
-    webSecurity.ignoring()
-        .antMatchers("/v2/api-docs", "/swagger-resources", "/swagger-ui.html")
-        .antMatchers("/companies", "/invoices", "/tax");
-  }
-
 }
