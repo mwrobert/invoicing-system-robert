@@ -35,14 +35,16 @@ function handleAddCompanyForSubmit() {
     form.on('submit', function (event) {
         event.preventDefault();
 
-        const csrfToken = document.cookie
-            .split(";")
-            .find(c => c.startsWith("XSRF-TOKEN="))
-            .split("=")[1];
+        const token = document.cookie.split(";").find(c => c.startsWith("XSRF-TOKEN="));
 
-        $.ajaxPrefilter(function(options, originalOptions, jqXhr) {
-            jqXhr.setRequestHeader("X-XSRF-TOKEN", csrfToken);
-        });
+        if (token) {
+            const csrfToken = token.split("=")[1];
+
+            $.ajaxPrefilter(function(options, originalOptions, jqXhr) {
+                jqXhr.setRequestHeader("X-XSRF-TOKEN", csrfToken);
+            });
+        }
+
 
         $.ajax({
             url: 'companies',
